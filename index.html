@@ -6,18 +6,25 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
-<body class="bg-gradient-to-r from-pink-100 to-purple-100 min-h-screen flex items-center justify-center">
+<body class="bg-gradient-to-r from-orange-100 to-red-200 min-h-screen flex items-center justify-center">
     <div class="bg-white shadow-2xl rounded-2xl p-8 text-center max-w-md w-full mx-4">
-        <h1 class="text-3xl font-bold text-purple-600 mb-6">💕 Compliments for my pudding 🍮 💕</h1>
+        <h1 class="text-3xl font-bold text-orange-600 mb-6">💕 Compliments for my pudding 🍮 💕</h1>
         
-        <div id="compliment-container" class="min-h-[200px] flex items-center justify-center">
-            <p id="compliment-text" class="text-xl text-gray-800 leading-relaxed"></p>
-            <div id="loading" class="animate-pulse">
-                <i class="fas fa-heart text-pink-500 text-4xl"></i>
+        <div id="compliment-container" class="min-h-[200px] flex items-center justify-center relative">
+            <p id="compliment-text" class="text-xl text-gray-800 leading-relaxed mb-4"></p>
+            <div id="image-container" class="w-full flex justify-center mt-4" style="display: none;">
+                <img id="random-image" class="max-w-full h-auto rounded-lg shadow-md" src="" alt="Special image">
+            </div>
+            <div id="loading" class="flex flex-col items-center">
+                <div class="flex items-center mb-2">
+                    <i class="fas fa-heart text-red-500 text-4xl animate-pulse"></i>
+                    <span class="mx-2 text-orange-500 font-bold">mwwwwwwwwwah!</span>
+                    <i class="fas fa-heart text-red-500 text-4xl animate-pulse"></i>
+                </div>
             </div>
         </div>
         
-        <button id="get-compliment" class="mt-6 bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 px-6 rounded-full transition duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-300">
+        <button id="get-compliment" class="mt-6 bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-full transition duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-orange-300">
             <i class="fas fa-heart mr-2"></i>Give the pudding a compliment!
         </button>
     </div>
@@ -28,18 +35,26 @@
             const loadingElement = document.getElementById('loading');
             const getComplimentBtn = document.getElementById('get-compliment');
             const complimentContainer = document.getElementById('compliment-container');
+            const imageContainer = document.getElementById('image-container');
+            const randomImage = document.getElementById('random-image');
 
-            // Your GitHub raw file URL
+            // Your GitHub raw file URLs
             const COMPLIMENTS_URL = 'https://raw.githubusercontent.com/BenGoodair/compliments/main/compliments.txt';
-
+            const IMAGE_BASE_URL = 'https://raw.githubusercontent.com/BenGoodair/compliments/main/Images/';
+            
+            // Cute words that pop up
+            const cuteWords = ["MWAH", "KHOM", "cuddles", "kisssiieeeeees", "smooochieeess", "my puddddinggg", "mwwwwah", "mwah mwah mwah"];
+            
             let compliments = [];
             let currentIndex = -1;
+            let clickCount = 0;
 
             // Show/hide loading state
             function setLoading(isLoading) {
                 if (isLoading) {
                     complimentText.style.display = 'none';
-                    loadingElement.style.display = 'block';
+                    imageContainer.style.display = 'none';
+                    loadingElement.style.display = 'flex';
                 } else {
                     complimentText.style.display = 'block';
                     loadingElement.style.display = 'none';
@@ -85,6 +100,39 @@
                 return compliments[currentIndex];
             }
 
+            function showRandomImage() {
+                // We have 9 images, numbered 1-9
+                const imageNumber = Math.floor(Math.random() * 9) + 1;
+                randomImage.src = `${IMAGE_BASE_URL}${imageNumber}.png`;
+                imageContainer.style.display = 'flex';
+            }
+
+            function createFloatingWord() {
+                const word = cuteWords[Math.floor(Math.random() * cuteWords.length)];
+                const wordElement = document.createElement('div');
+                wordElement.textContent = word;
+                wordElement.className = 'floating-word absolute text-2xl font-bold text-orange-500';
+                
+                // Random position and rotation
+                const angle = Math.random() * 60 - 30; // -30 to +30 degrees
+                const top = Math.random() * 80; // 0-80% from top
+                const left = Math.random() * 80; // 0-80% from left
+                
+                wordElement.style.top = `${top}%`;
+                wordElement.style.left = `${left}%`;
+                wordElement.style.transform = `rotate(${angle}deg)`;
+                
+                complimentContainer.appendChild(wordElement);
+                
+                // Fade in and out animation
+                setTimeout(() => {
+                    wordElement.classList.add('fade-out');
+                    setTimeout(() => {
+                        complimentContainer.removeChild(wordElement);
+                    }, 1000);
+                }, 1500);
+            }
+
             function displayRandomCompliment() {
                 if (compliments.length === 0) {
                     complimentText.textContent = 'What?! no compliments?! what happened?!';
@@ -92,14 +140,28 @@
                     return;
                 }
                 
+                clickCount++;
                 const compliment = getRandomCompliment();
+                
+                // Show image every 5 clicks
+                const showImage = clickCount % 5 === 0;
                 
                 // Simple animation
                 complimentContainer.classList.add('opacity-0');
                 setTimeout(() => {
                     complimentText.textContent = compliment;
+                    
+                    if (showImage) {
+                        showRandomImage();
+                    } else {
+                        imageContainer.style.display = 'none';
+                    }
+                    
                     setLoading(false);
                     complimentContainer.classList.remove('opacity-0');
+                    
+                    // Create floating word
+                    createFloatingWord();
                 }, 300);
             }
 
@@ -120,6 +182,28 @@
                     
                     #get-compliment:hover i {
                         animation: heartbeat 1s infinite;
+                    }
+                    
+                    /* Floating word animation */
+                    .floating-word {
+                        opacity: 0;
+                        animation: pop-in 0.5s forwards;
+                        z-index: 10;
+                    }
+                    
+                    @keyframes pop-in {
+                        0% { transform: scale(0) rotate(0deg); opacity: 0; }
+                        70% { transform: scale(1.2) rotate(var(--rotation, 0deg)); opacity: 1; }
+                        100% { transform: scale(1) rotate(var(--rotation, 0deg)); opacity: 1; }
+                    }
+                    
+                    .fade-out {
+                        animation: fade-out 1s forwards;
+                    }
+                    
+                    @keyframes fade-out {
+                        0% { opacity: 1; }
+                        100% { opacity: 0; }
                     }
                 </style>
             `);
