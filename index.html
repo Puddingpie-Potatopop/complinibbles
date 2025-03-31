@@ -5,22 +5,62 @@
     <title>Special Compliments</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Custom animations and styles */
+        @keyframes heartbeat {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: scale(0.5); }
+            50% { opacity: 1; transform: scale(1.2); }
+            100% { opacity: 0; transform: scale(1); }
+        }
+        
+        .word-popup {
+            position: absolute;
+            font-weight: bold;
+            color: #FF7F50;
+            font-size: 1.5rem;
+            z-index: 10;
+            animation: fadeInOut 2s forwards;
+            transform-origin: center;
+        }
+        
+        .loading-hearts {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .loading-heart {
+            color: #FF7F50;
+            animation: heartbeat 1s infinite;
+        }
+        
+        .loading-text {
+            color: #FF7F50;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+    </style>
 </head>
-<body class="bg-gradient-to-r from-orange-100 to-red-200 min-h-screen flex items-center justify-center">
+<body class="bg-gradient-to-r from-orange-100 to-red-100 min-h-screen flex items-center justify-center">
     <div class="bg-white shadow-2xl rounded-2xl p-8 text-center max-w-md w-full mx-4">
         <h1 class="text-3xl font-bold text-orange-600 mb-6">💕 Compliments for my pudding 🍮 💕</h1>
         
-        <div id="compliment-container" class="min-h-[200px] flex items-center justify-center relative">
+        <div id="compliment-container" class="min-h-[200px] flex flex-col items-center justify-center relative">
             <p id="compliment-text" class="text-xl text-gray-800 leading-relaxed mb-4"></p>
-            <div id="image-container" class="w-full flex justify-center mt-4" style="display: none;">
-                <img id="random-image" class="max-w-full h-auto rounded-lg shadow-md" src="" alt="Special image">
+            <div id="image-container" class="mt-4 max-w-full hidden">
+                <img id="random-image" class="max-h-[200px] rounded-lg shadow-md" src="" alt="Special image">
             </div>
-            <div id="loading" class="flex flex-col items-center">
-                <div class="flex items-center mb-2">
-                    <i class="fas fa-heart text-red-500 text-4xl animate-pulse"></i>
-                    <span class="mx-2 text-orange-500 font-bold">mwwwwwwwwwah!</span>
-                    <i class="fas fa-heart text-red-500 text-4xl animate-pulse"></i>
-                </div>
+            <div id="loading" class="loading-hearts">
+                <i class="fas fa-heart text-4xl loading-heart"></i>
+                <span class="loading-text">mwwwwwwwwwah!</span>
+                <i class="fas fa-heart text-4xl loading-heart"></i>
             </div>
         </div>
         
@@ -38,16 +78,18 @@
             const imageContainer = document.getElementById('image-container');
             const randomImage = document.getElementById('random-image');
 
-            // Your GitHub raw file URLs
+            // Your GitHub raw file URL
             const COMPLIMENTS_URL = 'https://raw.githubusercontent.com/BenGoodair/compliments/main/compliments.txt';
             const IMAGE_BASE_URL = 'https://raw.githubusercontent.com/BenGoodair/compliments/main/Images/';
-            
-            // Cute words that pop up
-            const cuteWords = ["MWAH", "KHOM", "cuddles", "kisssiieeeeees", "smooochieeess", "my puddddinggg", "mwwwwah", "mwah mwah mwah"];
             
             let compliments = [];
             let currentIndex = -1;
             let clickCount = 0;
+            
+            const popWords = [
+                "MWAH", "KHOM", "cuddles", "kisssiieeeeees", 
+                "smooochieeess", "my puddddinggg", "mwwwwwah", "mwah mwah mwah"
+            ];
 
             // Show/hide loading state
             function setLoading(isLoading) {
@@ -83,7 +125,7 @@
                         setLoading(false);
                     }
                 } catch (error) {
-                    complimentText.textContent = 'Ohhhhh, want to compliment you but I can't right now my pie'';
+                    complimentText.textContent = 'Ohhhhh, want to compliment you but I can't right now my pie';
                     console.error('we had an oopsie my puddlepop', error);
                     setLoading(false);
                 }
@@ -99,38 +141,38 @@
                 currentIndex = newIndex;
                 return compliments[currentIndex];
             }
-
-            function showRandomImage() {
-                // We have 9 images, numbered 1-9
-                const imageNumber = Math.floor(Math.random() * 9) + 1;
+            
+            function displayRandomImage() {
+                // Show a random image from the GitHub repo
+                const imageNumber = Math.floor(Math.random() * 9) + 1; // Images 1-9
                 randomImage.src = `${IMAGE_BASE_URL}${imageNumber}.png`;
-                imageContainer.style.display = 'flex';
+                imageContainer.style.display = 'block';
             }
-
-            function createFloatingWord() {
-                const word = cuteWords[Math.floor(Math.random() * cuteWords.length)];
-                const wordElement = document.createElement('div');
-                wordElement.textContent = word;
-                wordElement.className = 'floating-word absolute text-2xl font-bold text-orange-500';
+            
+            function createPopWord() {
+                const word = popWords[Math.floor(Math.random() * popWords.length)];
+                const popup = document.createElement('div');
+                popup.className = 'word-popup';
+                popup.textContent = word;
                 
-                // Random position and rotation
-                const angle = Math.random() * 60 - 30; // -30 to +30 degrees
-                const top = Math.random() * 80; // 0-80% from top
-                const left = Math.random() * 80; // 0-80% from left
+                // Random position within the container
+                const containerRect = complimentContainer.getBoundingClientRect();
+                const leftPos = Math.random() * (containerRect.width - 100);
+                const topPos = Math.random() * (containerRect.height - 50);
                 
-                wordElement.style.top = `${top}%`;
-                wordElement.style.left = `${left}%`;
-                wordElement.style.transform = `rotate(${angle}deg)`;
+                // Random rotation between -30 and 30 degrees
+                const rotation = Math.random() * 60 - 30;
                 
-                complimentContainer.appendChild(wordElement);
+                popup.style.left = `${leftPos}px`;
+                popup.style.top = `${topPos}px`;
+                popup.style.transform = `rotate(${rotation}deg)`;
                 
-                // Fade in and out animation
+                complimentContainer.appendChild(popup);
+                
+                // Remove after animation completes
                 setTimeout(() => {
-                    wordElement.classList.add('fade-out');
-                    setTimeout(() => {
-                        complimentContainer.removeChild(wordElement);
-                    }, 1000);
-                }, 1500);
+                    popup.remove();
+                }, 2000);
             }
 
             function displayRandomCompliment() {
@@ -143,16 +185,14 @@
                 clickCount++;
                 const compliment = getRandomCompliment();
                 
-                // Show image every 5 clicks
-                const showImage = clickCount % 5 === 0;
-                
                 // Simple animation
                 complimentContainer.classList.add('opacity-0');
                 setTimeout(() => {
                     complimentText.textContent = compliment;
                     
-                    if (showImage) {
-                        showRandomImage();
+                    // Show image every 5 clicks
+                    if (clickCount % 5 === 0) {
+                        displayRandomImage();
                     } else {
                         imageContainer.style.display = 'none';
                     }
@@ -160,8 +200,8 @@
                     setLoading(false);
                     complimentContainer.classList.remove('opacity-0');
                     
-                    // Create floating word
-                    createFloatingWord();
+                    // Create pop word
+                    createPopWord();
                 }, 300);
             }
 
@@ -173,37 +213,30 @@
                         transition: opacity 0.3s ease;
                     }
                     
-                    /* Heartbeat animation for button hover */
-                    @keyframes heartbeat {
-                        0% { transform: scale(1); }
-                        50% { transform: scale(1.1); }
-                        100% { transform: scale(1); }
-                    }
-                    
                     #get-compliment:hover i {
                         animation: heartbeat 1s infinite;
+                        color: #FF7F50;
                     }
                     
-                    /* Floating word animation */
-                    .floating-word {
-                        opacity: 0;
-                        animation: pop-in 0.5s forwards;
-                        z-index: 10;
+                    /* Coral theme colors */
+                    .bg-orange-500 {
+                        background-color: #FF7F50 !important;
                     }
                     
-                    @keyframes pop-in {
-                        0% { transform: scale(0) rotate(0deg); opacity: 0; }
-                        70% { transform: scale(1.2) rotate(var(--rotation, 0deg)); opacity: 1; }
-                        100% { transform: scale(1) rotate(var(--rotation, 0deg)); opacity: 1; }
+                    .bg-orange-600 {
+                        background-color: #FF6347 !important;
                     }
                     
-                    .fade-out {
-                        animation: fade-out 1s forwards;
+                    .text-orange-600 {
+                        color: #FF7F50 !important;
                     }
                     
-                    @keyframes fade-out {
-                        0% { opacity: 1; }
-                        100% { opacity: 0; }
+                    .from-orange-100 {
+                        --tw-gradient-from: #FFEBCD !important;
+                    }
+                    
+                    .to-red-100 {
+                        --tw-gradient-to: #FFE4E1 !important;
                     }
                 </style>
             `);
