@@ -8,7 +8,7 @@
 </head>
 <body class="bg-gradient-to-r from-pink-100 to-purple-100 min-h-screen flex items-center justify-center">
     <div class="bg-white shadow-2xl rounded-2xl p-8 text-center max-w-md w-full mx-4">
-        <h1 class="text-3xl font-bold text-purple-600 mb-6">💕 My Special Compliment For You</h1>
+        <h1 class="text-3xl font-bold text-purple-600 mb-6">💕 Compliments for my pudding 🍮 💕</h1>
         
         <div id="compliment-container" class="min-h-[200px] flex items-center justify-center">
             <p id="compliment-text" class="text-xl text-gray-800 leading-relaxed"></p>
@@ -18,7 +18,7 @@
         </div>
         
         <button id="get-compliment" class="mt-6 bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 px-6 rounded-full transition duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-300">
-            <i class="fas fa-heart mr-2"></i>Get a Compliment
+            <i class="fas fa-heart mr-2"></i>Give the pudding a compliment!
         </button>
     </div>
 
@@ -52,7 +52,7 @@
                 try {
                     const response = await fetch(COMPLIMENTS_URL);
                     if (!response.ok) {
-                        throw new Error('Failed to fetch compliments');
+                        throw new Error('Oh no my bear, compliments coming soon');
                     }
                     
                     const text = await response.text();
@@ -64,12 +64,12 @@
                     if (compliments.length > 0) {
                         displayRandomCompliment();
                     } else {
-                        complimentText.textContent = 'No compliments available yet.';
+                        complimentText.textContent = 'What?! no compliments?! what happened?!';
                         setLoading(false);
                     }
                 } catch (error) {
-                    complimentText.textContent = 'Oops! Could not load compliments.';
-                    console.error('Error fetching compliments:', error);
+                    complimentText.textContent = 'Ohhhhh, want to compliment you but I can't right now my pie'';
+                    console.error('we had an oopsie my puddlepop', error);
                     setLoading(false);
                 }
             }
@@ -87,7 +87,7 @@
 
             function displayRandomCompliment() {
                 if (compliments.length === 0) {
-                    complimentText.textContent = 'No compliments available.';
+                    complimentText.textContent = 'What?! no compliments?! what happened?!';
                     setLoading(false);
                     return;
                 }
