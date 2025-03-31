@@ -46,11 +46,29 @@
             font-weight: bold;
             font-size: 1.2rem;
         }
+        
+        .opacity-0 {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        /* Coral theme colors */
+        .coral-bg {
+            background-color: #FF7F50;
+        }
+        
+        .coral-bg-hover:hover {
+            background-color: #FF6347;
+        }
+        
+        .coral-text {
+            color: #FF7F50;
+        }
     </style>
 </head>
-<body class="bg-gradient-to-r from-orange-100 to-red-100 min-h-screen flex items-center justify-center">
+<body style="background: linear-gradient(to right, #FFEBCD, #FFE4E1); min-height: 100vh;" class="flex items-center justify-center">
     <div class="bg-white shadow-2xl rounded-2xl p-8 text-center max-w-md w-full mx-4">
-        <h1 class="text-3xl font-bold text-orange-600 mb-6">💕 Compliments for my pudding 🍮 💕</h1>
+        <h1 class="text-3xl font-bold mb-6 coral-text">💕 Compliments for my pudding 🍮 💕</h1>
         
         <div id="compliment-container" class="min-h-[200px] flex flex-col items-center justify-center relative">
             <p id="compliment-text" class="text-xl text-gray-800 leading-relaxed mb-4"></p>
@@ -64,13 +82,14 @@
             </div>
         </div>
         
-        <button id="get-compliment" class="mt-6 bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-full transition duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-orange-300">
+        <button id="get-compliment" class="mt-6 coral-bg coral-bg-hover text-white font-bold py-3 px-6 rounded-full transition duration-300 transform hover:scale-105 focus:outline-none">
             <i class="fas fa-heart mr-2"></i>Give the pudding a compliment!
         </button>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        // Wait for the DOM to be fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
             const complimentText = document.getElementById('compliment-text');
             const loadingElement = document.getElementById('loading');
             const getComplimentBtn = document.getElementById('get-compliment');
@@ -78,20 +97,26 @@
             const imageContainer = document.getElementById('image-container');
             const randomImage = document.getElementById('random-image');
 
-            // Your GitHub raw file URL
-            const COMPLIMENTS_URL = 'https://raw.githubusercontent.com/BenGoodair/compliments/main/compliments.txt';
-            const IMAGE_BASE_URL = 'https://raw.githubusercontent.com/BenGoodair/compliments/main/Images/';
-            
+            // Initialize
             let compliments = [];
             let currentIndex = -1;
             let clickCount = 0;
             
+            // Pop-up words
             const popWords = [
                 "MWAH", "KHOM", "cuddles", "kisssiieeeeees", 
                 "smooochieeess", "my puddddinggg", "mwwwwwah", "mwah mwah mwah"
             ];
 
-            // Show/hide loading state
+            // GitHub URLs
+            const COMPLIMENTS_URL = 'https://raw.githubusercontent.com/BenGoodair/compliments/main/compliments.txt';
+            const IMAGE_BASE_URL = 'https://raw.githubusercontent.com/BenGoodair/compliments/main/Images/';
+
+            // Initialize - hide compliment text and show loading
+            complimentText.style.display = 'none';
+            loadingElement.style.display = 'flex';
+            
+            // Function to show/hide loading state
             function setLoading(isLoading) {
                 if (isLoading) {
                     complimentText.style.display = 'none';
@@ -102,36 +127,11 @@
                     loadingElement.style.display = 'none';
                 }
             }
-
-            // Fetch compliments from GitHub
-            async function fetchCompliments() {
-                setLoading(true);
-                try {
-                    const response = await fetch(COMPLIMENTS_URL);
-                    if (!response.ok) {
-                        throw new Error('Oh no my bear, compliments coming soon');
-                    }
-                    
-                    const text = await response.text();
-                    compliments = text.split('\n')
-                        .filter(c => c.trim() !== '')
-                        .map(c => c.trim());
-                    
-                    // Initial compliment
-                    if (compliments.length > 0) {
-                        displayRandomCompliment();
-                    } else {
-                        complimentText.textContent = 'What?! no compliments?! what happened?!';
-                        setLoading(false);
-                    }
-                } catch (error) {
-                    complimentText.textContent = 'Ohhhhh, want to compliment you but I can't right now my pie';
-                    console.error('we had an oopsie my puddlepop', error);
-                    setLoading(false);
-                }
-            }
-
+            
+            // Function to get a random compliment
             function getRandomCompliment() {
+                if (compliments.length === 0) return "No compliments found";
+                
                 // Make sure we don't repeat the same compliment twice in a row
                 let newIndex;
                 do {
@@ -142,6 +142,7 @@
                 return compliments[currentIndex];
             }
             
+            // Function to display a random image
             function displayRandomImage() {
                 // Show a random image from the GitHub repo
                 const imageNumber = Math.floor(Math.random() * 9) + 1; // Images 1-9
@@ -149,6 +150,7 @@
                 imageContainer.style.display = 'block';
             }
             
+            // Function to create a pop-up word
             function createPopWord() {
                 const word = popWords[Math.floor(Math.random() * popWords.length)];
                 const popup = document.createElement('div');
@@ -174,82 +176,71 @@
                     popup.remove();
                 }, 2000);
             }
-
+            
+            // Function to display a random compliment
             function displayRandomCompliment() {
-                if (compliments.length === 0) {
-                    complimentText.textContent = 'What?! no compliments?! what happened?!';
-                    setLoading(false);
-                    return;
-                }
-                
                 clickCount++;
                 const compliment = getRandomCompliment();
                 
-                // Simple animation
-                complimentContainer.classList.add('opacity-0');
-                setTimeout(() => {
-                    complimentText.textContent = compliment;
-                    
-                    // Show image every 5 clicks
-                    if (clickCount % 5 === 0) {
-                        displayRandomImage();
-                    } else {
-                        imageContainer.style.display = 'none';
-                    }
-                    
-                    setLoading(false);
-                    complimentContainer.classList.remove('opacity-0');
-                    
-                    // Create pop word
-                    createPopWord();
-                }, 300);
-            }
-
-            // Add animation class
-            document.head.insertAdjacentHTML('beforeend', `
-                <style>
-                    .opacity-0 {
-                        opacity: 0;
-                        transition: opacity 0.3s ease;
-                    }
-                    
-                    #get-compliment:hover i {
-                        animation: heartbeat 1s infinite;
-                        color: #FF7F50;
-                    }
-                    
-                    /* Coral theme colors */
-                    .bg-orange-500 {
-                        background-color: #FF7F50 !important;
-                    }
-                    
-                    .bg-orange-600 {
-                        background-color: #FF6347 !important;
-                    }
-                    
-                    .text-orange-600 {
-                        color: #FF7F50 !important;
-                    }
-                    
-                    .from-orange-100 {
-                        --tw-gradient-from: #FFEBCD !important;
-                    }
-                    
-                    .to-red-100 {
-                        --tw-gradient-to: #FFE4E1 !important;
-                    }
-                </style>
-            `);
-
-            // Button click event
-            getComplimentBtn.addEventListener('click', () => {
-                if (compliments.length > 0) {
-                    setLoading(true);
-                    setTimeout(displayRandomCompliment, 400);  // Small delay for effect
+                complimentText.textContent = compliment;
+                
+                // Show image every 5 clicks
+                if (clickCount % 5 === 0) {
+                    displayRandomImage();
+                } else {
+                    imageContainer.style.display = 'none';
                 }
+                
+                setLoading(false);
+                
+                // Create pop word
+                createPopWord();
+            }
+            
+            // Fetch compliments from GitHub
+            async function fetchCompliments() {
+                try {
+                    const response = await fetch(COMPLIMENTS_URL);
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch compliments');
+                    }
+                    
+                    const text = await response.text();
+                    compliments = text.split('\n')
+                        .filter(c => c.trim() !== '')
+                        .map(c => c.trim());
+                    
+                    // Display initial compliment
+                    if (compliments.length > 0) {
+                        displayRandomCompliment();
+                    } else {
+                        complimentText.textContent = 'What?! no compliments?! what happened?!';
+                        setLoading(false);
+                    }
+                } catch (error) {
+                    console.error('Error fetching compliments:', error);
+                    complimentText.textContent = 'Ohhhhh, want to compliment you but I can't right now my pie';
+                    setLoading(false);
+                }
+            }
+            
+            // Button click event - make sure this runs
+            getComplimentBtn.addEventListener('click', function() {
+                console.log('Button clicked!');
+                setLoading(true);
+                
+                // Add a delay for the loading effect
+                setTimeout(function() {
+                    if (compliments.length > 0) {
+                        displayRandomCompliment();
+                    } else {
+                        complimentText.textContent = 'No compliments available!';
+                        setLoading(false);
+                    }
+                }, 800);
             });
-
-            // Initial fetch
+            
+            // Initialize by fetching compliments
             fetchCompliments();
         });
     </script>
