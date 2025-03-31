@@ -34,9 +34,22 @@
             opacity: 0;
             transition: opacity 0.3s ease;
         }
+        
+        #pop-word-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 20;
+        }
     </style>
 </head>
 <body class="bg-gradient-to-r from-orange-100 to-rose-100 min-h-screen flex items-center justify-center">
+    <!-- Container for pop-up words that covers the whole viewport -->
+    <div id="pop-word-container"></div>
+    
     <div class="bg-white shadow-2xl rounded-2xl p-8 text-center max-w-md w-full mx-4 relative overflow-hidden">
         <h1 class="text-3xl font-bold text-[#FF7F50] mb-6">💕 Compliments for my pudding 🍮 💕</h1>
         
@@ -58,7 +71,8 @@
             const loadingElement = document.getElementById('loading');
             const getComplimentBtn = document.getElementById('get-compliment');
             const complimentContainer = document.getElementById('compliment-container');
-            const mainContainer = complimentContainer.parentElement;
+            const popWordContainer = document.getElementById('pop-word-container');
+            const mainBox = complimentContainer.closest('.bg-white');
 
             // Your GitHub raw file URL
             const COMPLIMENTS_URL = 'https://raw.githubusercontent.com/BenGoodair/compliments/main/compliments.txt';
@@ -128,25 +142,53 @@
                 wordElement.textContent = word;
                 wordElement.classList.add('pop-word');
                 
-                // Random position within the container
-                const containerWidth = mainContainer.offsetWidth;
-                const containerHeight = mainContainer.offsetHeight;
+                // Get the box position
+                const boxRect = mainBox.getBoundingClientRect();
                 
-                // Position randomly but stay within the container's bounds
-                const left = 20 + Math.random() * (containerWidth - 150);
-                const top = 20 + Math.random() * (containerHeight - 80);
+                // Generate a random position outside the box but near it
+                let left, top;
+                
+                // Decide whether to place the word to the left, right, top, or bottom of the box
+                const placement = Math.floor(Math.random() * 4); // 0: left, 1: right, 2: top, 3: bottom
+                
+                const margin = 20; // Margin from the box
+                const maxDistance = 150; // Maximum distance from the box
+                
+                switch(placement) {
+                    case 0: // left side
+                        left = boxRect.left - margin - Math.random() * maxDistance;
+                        top = boxRect.top + Math.random() * boxRect.height;
+                        break;
+                    case 1: // right side
+                        left = boxRect.right + margin + Math.random() * maxDistance;
+                        top = boxRect.top + Math.random() * boxRect.height;
+                        break;
+                    case 2: // top
+                        left = boxRect.left + Math.random() * boxRect.width;
+                        top = boxRect.top - margin - Math.random() * maxDistance;
+                        break;
+                    case 3: // bottom
+                        left = boxRect.left + Math.random() * boxRect.width;
+                        top = boxRect.bottom + margin + Math.random() * maxDistance;
+                        break;
+                }
+                
+                // Make sure we stay within viewport bounds
+                left = Math.max(20, Math.min(window.innerWidth - 100, left));
+                top = Math.max(20, Math.min(window.innerHeight - 50, top));
+                
                 const rotation = -30 + Math.random() * 60; // Random rotation between -30 and 30 degrees
                 
                 wordElement.style.left = `${left}px`;
                 wordElement.style.top = `${top}px`;
                 wordElement.style.transform = `rotate(${rotation}deg)`;
                 
-                mainContainer.appendChild(wordElement);
+                popWordContainer.appendChild(wordElement);
                 
                 // Remove after animation completes
                 setTimeout(() => {
-                    if (mainContainer.contains(wordElement)) {
-                        mainContainer.removeChild(wordElement);
+                    if (popWordContainer.contains(wordElement)) {
+                        popWordContainer.removeChild(wordElement);
                     }
                 }, 1800); // Slightly longer than animation to ensure it's complete
             }
@@ -167,8 +209,8 @@
                     setLoading(false);
                     complimentContainer.classList.remove('opacity-transition');
                     
-                    // Add 2-4 pop words with slight delays between them
-                    const numWords = 2 + Math.floor(Math.random() * 3);
+                    // Add 3-6 pop words with slight delays between them
+                    const numWords = 3 + Math.floor(Math.random() * 4);
                     for (let i = 0; i < numWords; i++) {
                         setTimeout(createPopWord, i * 200);
                     }
