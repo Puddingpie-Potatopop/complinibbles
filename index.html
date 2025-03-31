@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Special Compliments</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gradient-to-r from-pink-100 to-purple-100 min-h-screen flex items-center justify-center">
+    <div class="bg-white shadow-2xl rounded-2xl p-8 text-center max-w-md w-full mx-4">
+        <h1 class="text-3xl font-bold text-purple-600 mb-6">💕 My Special Compliment For You</h1>
+        
+        <div id="compliment-container" class="min-h-[200px] flex items-center justify-center">
+            <p id="compliment-text" class="text-xl text-gray-800 leading-relaxed"></p>
+            <div id="loading" class="animate-pulse">
+                <i class="fas fa-heart text-pink-500 text-4xl"></i>
+            </div>
+        </div>
+        
+        <button id="get-compliment" class="mt-6 bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 px-6 rounded-full transition duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-300">
+            <i class="fas fa-heart mr-2"></i>Get a Compliment
+        </button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const complimentText = document.getElementById('compliment-text');
+            const loadingElement = document.getElementById('loading');
+            const getComplimentBtn = document.getElementById('get-compliment');
+            const complimentContainer = document.getElementById('compliment-container');
+
+            // Your GitHub raw file URL
+            const COMPLIMENTS_URL = 'https://raw.githubusercontent.com/BenGoodair/compliments/main/compliments.txt';
+
+            let compliments = [];
+            let currentIndex = -1;
+
+            // Show/hide loading state
+            function setLoading(isLoading) {
+                if (isLoading) {
+                    complimentText.style.display = 'none';
+                    loadingElement.style.display = 'block';
+                } else {
+                    complimentText.style.display = 'block';
+                    loadingElement.style.display = 'none';
+                }
+            }
+
+            // Fetch compliments from GitHub
+            async function fetchCompliments() {
+                setLoading(true);
+                try {
+                    const response = await fetch(COMPLIMENTS_URL);
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch compliments');
+                    }
+                    
+                    const text = await response.text();
+                    compliments = text.split('\n')
+                        .filter(c => c.trim() !== '')
+                        .map(c => c.trim());
+                    
+                    // Initial compliment
+                    if (compliments.length > 0) {
+                        displayRandomCompliment();
+                    } else {
+                        complimentText.textContent = 'No compliments available yet.';
+                        setLoading(false);
+                    }
+                } catch (error) {
+                    complimentText.textContent = 'Oops! Could not load compliments.';
+                    console.error('Error fetching compliments:', error);
+                    setLoading(false);
+                }
+            }
+
+            function getRandomCompliment() {
+                // Make sure we don't repeat the same compliment twice in a row
+                let newIndex;
+                do {
+                    newIndex = Math.floor(Math.random() * compliments.length);
+                } while (newIndex === currentIndex && compliments.length > 1);
+                
+                currentIndex = newIndex;
+                return compliments[currentIndex];
+            }
+
+            function displayRandomCompliment() {
+                if (compliments.length === 0) {
+                    complimentText.textContent = 'No compliments available.';
+                    setLoading(false);
+                    return;
+                }
+                
+                const compliment = getRandomCompliment();
+                
+                // Simple animation
+                complimentContainer.classList.add('opacity-0');
+                setTimeout(() => {
+                    complimentText.textContent = compliment;
+                    setLoading(false);
+                    complimentContainer.classList.remove('opacity-0');
+                }, 300);
+            }
+
+            // Add animation class
+            document.head.insertAdjacentHTML('beforeend', `
+                <style>
+                    .opacity-0 {
+                        opacity: 0;
+                        transition: opacity 0.3s ease;
+                    }
+                    
+                    /* Heartbeat animation for button hover */
+                    @keyframes heartbeat {
+                        0% { transform: scale(1); }
+                        50% { transform: scale(1.1); }
+                        100% { transform: scale(1); }
+                    }
+                    
+                    #get-compliment:hover i {
+                        animation: heartbeat 1s infinite;
+                    }
+                </style>
+            `);
+
+            // Button click event
+            getComplimentBtn.addEventListener('click', () => {
+                if (compliments.length > 0) {
+                    setLoading(true);
+                    setTimeout(displayRandomCompliment, 400);  // Small delay for effect
+                }
+            });
+
+            // Initial fetch
+            fetchCompliments();
+        });
+    </script>
+</body>
+</html>
