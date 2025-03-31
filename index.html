@@ -14,124 +14,101 @@
         }
         
         @keyframes fadeInOut {
-            0% { opacity: 0; transform: scale(0.5); }
-            50% { opacity: 1; transform: scale(1.2); }
+            0% { opacity: 0; transform: scale(0.8); }
+            15% { opacity: 1; transform: scale(1.1); }
+            85% { opacity: 1; transform: scale(1.1); }
             100% { opacity: 0; transform: scale(1); }
         }
         
-        .word-popup {
+        .pop-word {
             position: absolute;
             font-weight: bold;
             color: #FF7F50;
             font-size: 1.5rem;
+            animation: fadeInOut 1.5s forwards;
+            text-shadow: 1px 1px 3px rgba(255, 127, 80, 0.3);
             z-index: 10;
-            animation: fadeInOut 2s forwards;
-            transform-origin: center;
         }
         
-        .loading-hearts {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-        
-        .loading-heart {
-            color: #FF7F50;
-            animation: heartbeat 1s infinite;
-        }
-        
-        .loading-text {
-            color: #FF7F50;
-            font-weight: bold;
-            font-size: 1.2rem;
-        }
-        
-        .opacity-0 {
+        .opacity-transition {
             opacity: 0;
             transition: opacity 0.3s ease;
         }
-        
-        /* Coral theme colors */
-        .coral-bg {
-            background-color: #FF7F50;
-        }
-        
-        .coral-bg-hover:hover {
-            background-color: #FF6347;
-        }
-        
-        .coral-text {
-            color: #FF7F50;
-        }
     </style>
 </head>
-<body style="background: linear-gradient(to right, #FFEBCD, #FFE4E1); min-height: 100vh;" class="flex items-center justify-center">
-    <div class="bg-white shadow-2xl rounded-2xl p-8 text-center max-w-md w-full mx-4">
-        <h1 class="text-3xl font-bold mb-6 coral-text">💕 Compliments for my pudding 🍮 💕</h1>
+<body class="bg-gradient-to-r from-orange-100 to-rose-100 min-h-screen flex items-center justify-center">
+    <div class="bg-white shadow-2xl rounded-2xl p-8 text-center max-w-md w-full mx-4 relative overflow-hidden">
+        <h1 class="text-3xl font-bold text-[#FF7F50] mb-6">💕 Compliments for my pudding 🍮 💕</h1>
         
-        <div id="compliment-container" class="min-h-[200px] flex flex-col items-center justify-center relative">
-            <p id="compliment-text" class="text-xl text-gray-800 leading-relaxed mb-4"></p>
-            <div id="image-container" class="mt-4 max-w-full hidden">
-                <img id="random-image" class="max-h-[200px] rounded-lg shadow-md" src="" alt="Special image">
-            </div>
-            <div id="loading" class="loading-hearts">
-                <i class="fas fa-heart text-4xl loading-heart"></i>
-                <span class="loading-text">mwwwwwwwwwah!</span>
-                <i class="fas fa-heart text-4xl loading-heart"></i>
+        <div id="compliment-container" class="min-h-[200px] flex items-center justify-center relative">
+            <p id="compliment-text" class="text-xl text-gray-800 leading-relaxed"></p>
+            <div id="loading" class="animate-pulse">
+                <i class="fas fa-heart text-[#FF7F50] text-4xl"></i>
             </div>
         </div>
         
-        <button id="get-compliment" class="mt-6 coral-bg coral-bg-hover text-white font-bold py-3 px-6 rounded-full transition duration-300 transform hover:scale-105 focus:outline-none">
+        <button id="get-compliment" class="mt-6 bg-[#FF7F50] hover:bg-[#FF6347] text-white font-bold py-3 px-6 rounded-full transition duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#FF7F50]">
             <i class="fas fa-heart mr-2"></i>Give the pudding a compliment!
         </button>
     </div>
 
     <script>
-        // Wait for the DOM to be fully loaded
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', () => {
             const complimentText = document.getElementById('compliment-text');
             const loadingElement = document.getElementById('loading');
             const getComplimentBtn = document.getElementById('get-compliment');
             const complimentContainer = document.getElementById('compliment-container');
-            const imageContainer = document.getElementById('image-container');
-            const randomImage = document.getElementById('random-image');
+            const mainContainer = complimentContainer.parentElement;
 
-            // Initialize
+            // Your GitHub raw file URL
+            const COMPLIMENTS_URL = 'https://raw.githubusercontent.com/BenGoodair/compliments/main/compliments.txt';
+
+            // Words that will randomly pop up
+            const popWords = ["MWAH", "KHOM", "cuddles", "kisssiieeeeees", "smooochieeess", "my puddddinggg", "mwwwwah", "mwah mwah mwah"];
+
             let compliments = [];
             let currentIndex = -1;
-            let clickCount = 0;
-            
-            // Pop-up words
-            const popWords = [
-                "MWAH", "KHOM", "cuddles", "kisssiieeeeees", 
-                "smooochieeess", "my puddddinggg", "mwwwwwah", "mwah mwah mwah"
-            ];
 
-            // GitHub URLs
-            const COMPLIMENTS_URL = 'https://raw.githubusercontent.com/BenGoodair/compliments/main/compliments.txt';
-            const IMAGE_BASE_URL = 'https://raw.githubusercontent.com/BenGoodair/compliments/main/Images/';
-
-            // Initialize - hide compliment text and show loading
-            complimentText.style.display = 'none';
-            loadingElement.style.display = 'flex';
-            
-            // Function to show/hide loading state
+            // Show/hide loading state
             function setLoading(isLoading) {
                 if (isLoading) {
                     complimentText.style.display = 'none';
-                    imageContainer.style.display = 'none';
-                    loadingElement.style.display = 'flex';
+                    loadingElement.style.display = 'block';
                 } else {
                     complimentText.style.display = 'block';
                     loadingElement.style.display = 'none';
                 }
             }
-            
-            // Function to get a random compliment
+
+            // Fetch compliments from GitHub
+            async function fetchCompliments() {
+                setLoading(true);
+                try {
+                    const response = await fetch(COMPLIMENTS_URL);
+                    if (!response.ok) {
+                        throw new Error('Oh no my bear, compliments coming soon');
+                    }
+                    
+                    const text = await response.text();
+                    compliments = text.split('\n')
+                        .filter(c => c.trim() !== '')
+                        .map(c => c.trim());
+                    
+                    // Initial compliment
+                    if (compliments.length > 0) {
+                        displayRandomCompliment();
+                    } else {
+                        complimentText.textContent = 'What?! no compliments?! what happened?!';
+                        setLoading(false);
+                    }
+                } catch (error) {
+                    complimentText.textContent = 'Ohhhhh, want to compliment you but I can\'t right now my pie';
+                    console.error('we had an oopsie my puddlepop', error);
+                    setLoading(false);
+                }
+            }
+
             function getRandomCompliment() {
-                if (compliments.length === 0) return "No compliments found";
-                
                 // Make sure we don't repeat the same compliment twice in a row
                 let newIndex;
                 do {
@@ -141,106 +118,81 @@
                 currentIndex = newIndex;
                 return compliments[currentIndex];
             }
-            
-            // Function to display a random image
-            function displayRandomImage() {
-                // Show a random image from the GitHub repo
-                const imageNumber = Math.floor(Math.random() * 9) + 1; // Images 1-9
-                randomImage.src = `${IMAGE_BASE_URL}${imageNumber}.png`;
-                imageContainer.style.display = 'block';
-            }
-            
-            // Function to create a pop-up word
+
             function createPopWord() {
+                // Pick a random word
                 const word = popWords[Math.floor(Math.random() * popWords.length)];
-                const popup = document.createElement('div');
-                popup.className = 'word-popup';
-                popup.textContent = word;
+                
+                // Create element
+                const wordElement = document.createElement('div');
+                wordElement.textContent = word;
+                wordElement.classList.add('pop-word');
                 
                 // Random position within the container
-                const containerRect = complimentContainer.getBoundingClientRect();
-                const leftPos = Math.random() * (containerRect.width - 100);
-                const topPos = Math.random() * (containerRect.height - 50);
+                const containerWidth = mainContainer.offsetWidth;
+                const containerHeight = mainContainer.offsetHeight;
                 
-                // Random rotation between -30 and 30 degrees
-                const rotation = Math.random() * 60 - 30;
+                // Position randomly but stay within the container's bounds
+                const left = 20 + Math.random() * (containerWidth - 150);
+                const top = 20 + Math.random() * (containerHeight - 80);
+                const rotation = -30 + Math.random() * 60; // Random rotation between -30 and 30 degrees
                 
-                popup.style.left = `${leftPos}px`;
-                popup.style.top = `${topPos}px`;
-                popup.style.transform = `rotate(${rotation}deg)`;
+                wordElement.style.left = `${left}px`;
+                wordElement.style.top = `${top}px`;
+                wordElement.style.transform = `rotate(${rotation}deg)`;
                 
-                complimentContainer.appendChild(popup);
+                mainContainer.appendChild(wordElement);
                 
                 // Remove after animation completes
                 setTimeout(() => {
-                    popup.remove();
-                }, 2000);
+                    if (mainContainer.contains(wordElement)) {
+                        mainContainer.removeChild(wordElement);
+                    }
+                }, 1800); // Slightly longer than animation to ensure it's complete
             }
-            
-            // Function to display a random compliment
+
             function displayRandomCompliment() {
-                clickCount++;
+                if (compliments.length === 0) {
+                    complimentText.textContent = 'What?! no compliments?! what happened?!';
+                    setLoading(false);
+                    return;
+                }
+                
                 const compliment = getRandomCompliment();
                 
-                complimentText.textContent = compliment;
-                
-                // Show image every 5 clicks
-                if (clickCount % 5 === 0) {
-                    displayRandomImage();
-                } else {
-                    imageContainer.style.display = 'none';
-                }
-                
-                setLoading(false);
-                
-                // Create pop word
-                createPopWord();
-            }
-            
-            // Fetch compliments from GitHub
-            async function fetchCompliments() {
-                try {
-                    const response = await fetch(COMPLIMENTS_URL);
-                    if (!response.ok) {
-                        throw new Error('Failed to fetch compliments');
-                    }
-                    
-                    const text = await response.text();
-                    compliments = text.split('\n')
-                        .filter(c => c.trim() !== '')
-                        .map(c => c.trim());
-                    
-                    // Display initial compliment
-                    if (compliments.length > 0) {
-                        displayRandomCompliment();
-                    } else {
-                        complimentText.textContent = 'What?! no compliments?! what happened?!';
-                        setLoading(false);
-                    }
-                } catch (error) {
-                    console.error('Error fetching compliments:', error);
-                    complimentText.textContent = 'Ohhhhh, want to compliment you but I can't right now my pie';
+                // Simple animation
+                complimentContainer.classList.add('opacity-transition');
+                setTimeout(() => {
+                    complimentText.textContent = compliment;
                     setLoading(false);
-                }
-            }
-            
-            // Button click event - make sure this runs
-            getComplimentBtn.addEventListener('click', function() {
-                console.log('Button clicked!');
-                setLoading(true);
-                
-                // Add a delay for the loading effect
-                setTimeout(function() {
-                    if (compliments.length > 0) {
-                        displayRandomCompliment();
-                    } else {
-                        complimentText.textContent = 'No compliments available!';
-                        setLoading(false);
+                    complimentContainer.classList.remove('opacity-transition');
+                    
+                    // Add 2-4 pop words with slight delays between them
+                    const numWords = 2 + Math.floor(Math.random() * 3);
+                    for (let i = 0; i < numWords; i++) {
+                        setTimeout(createPopWord, i * 200);
                     }
-                }, 800);
+                }, 300);
+            }
+
+            // Button hover effect - make heart beat
+            getComplimentBtn.querySelector('i').style.display = 'inline-block';
+            getComplimentBtn.addEventListener('mouseenter', () => {
+                getComplimentBtn.querySelector('i').style.animation = 'heartbeat 1s infinite';
             });
-            
-            // Initialize by fetching compliments
+            getComplimentBtn.addEventListener('mouseleave', () => {
+                getComplimentBtn.querySelector('i').style.animation = '';
+            });
+
+            // Button click event
+            getComplimentBtn.addEventListener('click', () => {
+                if (compliments.length > 0) {
+                    setLoading(true);
+                    setTimeout(displayRandomCompliment, 400);  // Small delay for effect
+                }
+            });
+
+            // Initial fetch
             fetchCompliments();
         });
     </script>
