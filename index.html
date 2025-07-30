@@ -1,242 +1,282 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Special Compliments</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        /* Custom animations and styles */
-        @keyframes heartbeat {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-        
-        @keyframes fadeInOut {
-            0% { opacity: 0; transform: scale(0.8); }
-            15% { opacity: 1; transform: scale(1.1); }
-            85% { opacity: 1; transform: scale(1.1); }
-            100% { opacity: 0; transform: scale(1); }
-        }
-        
-        .pop-word {
-            position: absolute;
-            font-weight: bold;
-            color: #FF7F50;
-            font-size: 1.5rem;
-            animation: fadeInOut 1.5s forwards;
-            text-shadow: 1px 1px 3px rgba(255, 127, 80, 0.3);
-            z-index: 10;
-        }
-        
-        .opacity-transition {
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        
-        #pop-word-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 20;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Pudding Compliments & Top of the Pops</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    /* Custom animations and styles */
+    @keyframes heartbeat { 
+      0% { transform: scale(1); } 
+      50% { transform: scale(1.1); } 
+      100% { transform: scale(1); } 
+    }
+    @keyframes fadeInOut {
+      0% { opacity: 0; transform: scale(0.8); }
+      15% { opacity: 1; transform: scale(1.1); }
+      85% { opacity: 1; transform: scale(1.1); }
+      100% { opacity: 0; transform: scale(1); }
+    }
+    .pop-word {
+      position: absolute;
+      font-weight: bold;
+      color: #FF7F50;
+      font-size: 1.5rem;
+      animation: fadeInOut 1.5s forwards;
+      text-shadow: 1px 1px 3px rgba(255, 127, 80, 0.3);
+      z-index: 10;
+    }
+    .opacity-transition {
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    #pop-word-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 20;
+    }
+
+    /* Tab styles */
+    .tab-btn {
+      padding: 0.5rem 1rem;
+      font-weight: 600;
+      border-top-left-radius: 1rem;
+      border-top-right-radius: 1rem;
+      background-color: #FED7CC;
+      color: #FF7F50;
+      border: 2px solid #FF7F50;
+      border-bottom: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .tab-btn:hover {
+      background-color: #FFF;
+      transform: translateY(-2px);
+    }
+    .tab-btn.active {
+      background-color: #FFF;
+      color: #FF7F50;
+      border-top: 4px solid #FF7F50;
+      transform: translateY(-2px);
+    }
+    .tab-content {
+      display: none;
+      width: 100%;
+      flex-grow: 1;
+      align-items: center;
+      justify-content: center;
+    }
+    .tab-content.active {
+      display: flex;
+    }
+  </style>
 </head>
-<body class="bg-gradient-to-r from-orange-100 to-rose-100 min-h-screen flex items-center justify-center">
-    <!-- Container for pop-up words that covers the whole viewport -->
-    <div id="pop-word-container"></div>
-    
+<body class="bg-gradient-to-r from-orange-100 to-rose-100 min-h-screen flex flex-col items-center">
+
+  <!-- NAV TABS -->
+  <div class="mt-8 flex space-x-2">
+    <button id="tab-compliments-btn" class="tab-btn active">
+      <i class="fas fa-comment-dots mr-2"></i>Compliments
+    </button>
+    <button id="tab-pops-btn" class="tab-btn">
+      <i class="fas fa-music mr-2"></i>Top of the Pops
+    </button>
+  </div>
+
+  <!-- COMPLIMENTS TAB CONTENT -->
+  <div id="tab-compliments" class="tab-content active">
     <div class="bg-white shadow-2xl rounded-2xl p-8 text-center max-w-md w-full mx-4 relative overflow-hidden">
-        <h1 class="text-3xl font-bold text-[#FF7F50] mb-6">Compliments for my pudding<br>  💕🍮💕</h1>
-        
-        <div id="compliment-container" class="min-h-[200px] flex items-center justify-center relative">
-            <p id="compliment-text" class="text-xl text-gray-800 leading-relaxed"></p>
-            <div id="loading" class="animate-pulse">
-                <i class="fas fa-heart text-[#FF7F50] text-4xl"></i>
-            </div>
+      <h1 class="text-3xl font-bold text-[#FF7F50] mb-6">Compliments for my pudding<br>  💕🍮💕</h1>
+      <div id="pop-word-container"></div>
+      <div id="compliment-container" class="min-h-[200px] flex items-center justify-center relative">
+        <p id="compliment-text" class="text-xl text-gray-800 leading-relaxed"></p>
+        <div id="loading" class="animate-pulse">
+          <i class="fas fa-heart text-[#FF7F50] text-4xl"></i>
         </div>
-        
-        <button id="get-compliment" class="mt-6 bg-[#FF7F50] hover:bg-[#FF6347] text-white font-bold py-3 px-6 rounded-full transition duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#FF7F50]">
-            <i class="fas fa-heart mr-2"></i>Give the pudding a compliment!
-        </button>
+      </div>
+      <button id="get-compliment" class="mt-6 bg-[#FF7F50] hover:bg-[#FF6347] text-white font-bold py-3 px-6 rounded-full transition transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#FF7F50]">
+        <i class="fas fa-heart mr-2"></i>Give the pudding a compliment!
+      </button>
     </div>
+  </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const complimentText = document.getElementById('compliment-text');
-            const loadingElement = document.getElementById('loading');
-            const getComplimentBtn = document.getElementById('get-compliment');
-            const complimentContainer = document.getElementById('compliment-container');
-            const popWordContainer = document.getElementById('pop-word-container');
-            const mainBox = complimentContainer.closest('.bg-white');
+  <!-- TOP OF THE POPS TAB CONTENT -->
+  <div id="tab-pops" class="tab-content">
+    <div class="bg-white shadow-2xl rounded-2xl p-8 text-center max-w-md w-full mx-4 relative overflow-hidden">
+      <h1 class="text-3xl font-bold text-[#FF7F50] mb-6">
+        <i class="fas fa-heart text-[#FF7F50] animate-pulse mx-2"></i>
+        Top of the Pops
+        <i class="fas fa-heart text-[#FF7F50] animate-pulse mx-2"></i>
+      </h1>
+      <ul class="space-y-4 text-left">
+        <li class="flex items-center space-x-3">
+          <i class="fas fa-heart text-[#FF7F50]"></i>
+          <span>Track 1</span>
+          <audio controls src="Top%20of%20the%20Pops/Track%201.m4a" class="ml-auto"></audio>
+        </li>
+        <li class="flex items-center space-x-3">
+          <i class="fas fa-heart text-[#FF7F50]"></i>
+          <span>Track 2</span>
+          <audio controls src="Top%20of%20the%20Pops/Track%202.m4a" class="ml-auto"></audio>
+        </li>
+        <li class="flex items-center space-x-3">
+          <i class="fas fa-heart text-[#FF7F50]"></i>
+          <span>Interlude 1</span>
+          <audio controls src="Top%20of%20the%20Pops/Interlude%201.m4a" class="ml-auto"></audio>
+        </li>
+    	<li class="flex items-center space-x-3">
+          <i class="fas fa-heart text-[#FF7F50]"></i>
+          <span>Track 3</span>
+          <audio controls src="Top%20of%20the%20Pops/Track%203.m4a" class="ml-auto"></audio>
+        </li>
+        <li class="flex items-center space-x-3">
+          <i class="fas fa-heart text-[#FF7F50]"></i>
+          <span>Track 4</span>
+          <audio controls src="Top%20of%20the%20Pops/Track%204.m4a" class="ml-auto"></audio>
+        </li>
+        <li class="flex items-center space-x-3">
+          <i class="fas fa-heart text-[#FF7F50]"></i>
+          <span>Track 5</span>
+          <audio controls src="Top%20of%20the%20Pops/Track%205.m4a" class="ml-auto"></audio>
+        </li>
+        <li class="flex items-center space-x-3">
+          <i class="fas fa-heart text-[#FF7F50]"></i>
+          <span>Interlude 2</span>
+          <audio controls src="Top%20of%20the%20Pops/Interlude%202.m4a" class="ml-auto"></audio>
+        </li>
+    	<li class="flex items-center space-x-3">
+          <i class="fas fa-heart text-[#FF7F50]"></i>
+          <span>Track 6 - Outro</span>
+          <audio controls src="Top%20of%20the%20Pops/Track%206%20-%20Outro.m4a" class="ml-auto"></audio>
+        </li>
+      </ul>
+    </div>
+  </div>
 
-            // Your GitHub raw file URL
-            const COMPLIMENTS_URL = 'https://raw.githubusercontent.com/BenGoodair/compliments/main/compliments.txt';
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // ——— Tab logic ———
+      const complimentsBtn  = document.getElementById('tab-compliments-btn');
+      const popsBtn         = document.getElementById('tab-pops-btn');
+      const tabCompliments  = document.getElementById('tab-compliments');
+      const tabPops         = document.getElementById('tab-pops');
 
-            // Words that will randomly pop up
-            const popWords = ["MWAH", "KHOM","GRAB", "Squeeeeze", "rubbiees","POUNCE", "cuddles", "chomp", "eat me", "nuzzzleess","mümmeln" , "kisssiieeeeees", "smooochieeess", "my puddddinggg", "mwwwwah", "mwah mwah mwah"];
+      function showTab(tab) {
+        complimentsBtn.classList.remove('active');
+        popsBtn.classList.remove('active');
+        tabCompliments.classList.remove('active');
+        tabPops.classList.remove('active');
 
-            let compliments = [];
-            let currentIndex = -1;
+        if (tab === 'compliments') {
+          complimentsBtn.classList.add('active');
+          tabCompliments.classList.add('active');
+        } else {
+          popsBtn.classList.add('active');
+          tabPops.classList.add('active');
+        }
+      }
 
-            // Show/hide loading state
-            function setLoading(isLoading) {
-                if (isLoading) {
-                    complimentText.style.display = 'none';
-                    loadingElement.style.display = 'block';
-                } else {
-                    complimentText.style.display = 'block';
-                    loadingElement.style.display = 'none';
-                }
-            }
+      complimentsBtn.addEventListener('click', () => showTab('compliments'));
+      popsBtn.addEventListener('click', () => showTab('pops'));
 
-            // Fetch compliments from GitHub
-            async function fetchCompliments() {
-                setLoading(true);
-                try {
-                    const response = await fetch(COMPLIMENTS_URL);
-                    if (!response.ok) {
-                        throw new Error('Oh no my bear, compliments coming soon');
-                    }
-                    
-                    const text = await response.text();
-                    compliments = text.split('\n')
-                        .filter(c => c.trim() !== '')
-                        .map(c => c.trim());
-                    
-                    // Initial compliment
-                    if (compliments.length > 0) {
-                        displayRandomCompliment();
-                    } else {
-                        complimentText.textContent = 'What?! no compliments?! what happened?!';
-                        setLoading(false);
-                    }
-                } catch (error) {
-                    complimentText.textContent = 'Ohhhhh, want to compliment you but I can\'t right now my pie';
-                    console.error('we had an oopsie my puddlepop', error);
-                    setLoading(false);
-                }
-            }
 
-            function getRandomCompliment() {
-                // Make sure we don't repeat the same compliment twice in a row
-                let newIndex;
-                do {
-                    newIndex = Math.floor(Math.random() * compliments.length);
-                } while (newIndex === currentIndex && compliments.length > 1);
-                
-                currentIndex = newIndex;
-                return compliments[currentIndex];
-            }
+      // ——— Compliment generator logic ———
+      const complimentText      = document.getElementById('compliment-text');
+      const loadingElement      = document.getElementById('loading');
+      const getComplimentBtn    = document.getElementById('get-compliment');
+      const complimentContainer = document.getElementById('compliment-container');
+      const popWordContainer    = document.getElementById('pop-word-container');
+      const mainBox             = complimentContainer.closest('.bg-white');
 
-            function createPopWord() {
-                // Pick a random word
-                const word = popWords[Math.floor(Math.random() * popWords.length)];
-                
-                // Create element
-                const wordElement = document.createElement('div');
-                wordElement.textContent = word;
-                wordElement.classList.add('pop-word');
-                
-                // Get the box position
-                const boxRect = mainBox.getBoundingClientRect();
-                
-                // Generate a random position outside the box but near it
-                let left, top;
-                
-                // Decide whether to place the word to the left, right, top, or bottom of the box
-                const placement = Math.floor(Math.random() * 4); // 0: left, 1: right, 2: top, 3: bottom
-                
-                const margin = 20; // Margin from the box
-                const maxDistance = 150; // Maximum distance from the box
-                
-                switch(placement) {
-                    case 0: // left side
-                        left = boxRect.left - margin - Math.random() * maxDistance;
-                        top = boxRect.top + Math.random() * boxRect.height;
-                        break;
-                    case 1: // right side
-                        left = boxRect.right + margin + Math.random() * maxDistance;
-                        top = boxRect.top + Math.random() * boxRect.height;
-                        break;
-                    case 2: // top
-                        left = boxRect.left + Math.random() * boxRect.width;
-                        top = boxRect.top - margin - Math.random() * maxDistance;
-                        break;
-                    case 3: // bottom
-                        left = boxRect.left + Math.random() * boxRect.width;
-                        top = boxRect.bottom + margin + Math.random() * maxDistance;
-                        break;
-                }
-                
-                // Make sure we stay within viewport bounds
-                left = Math.max(20, Math.min(window.innerWidth - 100, left));
-                top = Math.max(20, Math.min(window.innerHeight - 50, top));
-                
-                const rotation = -30 + Math.random() * 60; // Random rotation between -30 and 30 degrees
-                
-                wordElement.style.left = `${left}px`;
-                wordElement.style.top = `${top}px`;
-                wordElement.style.transform = `rotate(${rotation}deg)`;
-                
-                popWordContainer.appendChild(wordElement);
-                
-                // Remove after animation completes
-                setTimeout(() => {
-                    if (popWordContainer.contains(wordElement)) {
-                        popWordContainer.removeChild(wordElement);
-                    }
-                }, 1800); // Slightly longer than animation to ensure it's complete
-            }
+      const COMPLIMENTS_URL = 'https://raw.githubusercontent.com/BenGoodair/compliments/main/compliments.txt';
+      const popWords = ["MWAH","KHOM","GRAB","Squeeeeze","rubbiees","POUNCE","cuddles","chomp","eat me","nuzzzleess","mümmeln","kisssiieeeeees","smooochieeess","my puddddinggg","mwwwwah","mwah mwah mwah"];
 
-            function displayRandomCompliment() {
-                if (compliments.length === 0) {
-                    complimentText.textContent = 'What?! no compliments?! what happened?!';
-                    setLoading(false);
-                    return;
-                }
-                
-                const compliment = getRandomCompliment();
-                
-                // Simple animation
-                complimentContainer.classList.add('opacity-transition');
-                setTimeout(() => {
-                    complimentText.textContent = compliment;
-                    setLoading(false);
-                    complimentContainer.classList.remove('opacity-transition');
-                    
-                    // Add 3-6 pop words with slight delays between them
-                    const numWords = 3 + Math.floor(Math.random() * 4);
-                    for (let i = 0; i < numWords; i++) {
-                        setTimeout(createPopWord, i * 200);
-                    }
-                }, 300);
-            }
+      let compliments = [], currentIndex = -1;
 
-            // Button hover effect - make heart beat
-            getComplimentBtn.querySelector('i').style.display = 'inline-block';
-            getComplimentBtn.addEventListener('mouseenter', () => {
-                getComplimentBtn.querySelector('i').style.animation = 'heartbeat 1s infinite';
-            });
-            getComplimentBtn.addEventListener('mouseleave', () => {
-                getComplimentBtn.querySelector('i').style.animation = '';
-            });
+      function setLoading(isLoading) {
+        complimentText.style.display = isLoading ? 'none' : 'block';
+        loadingElement.style.display = isLoading ? 'block' : 'none';
+      }
 
-            // Button click event
-            getComplimentBtn.addEventListener('click', () => {
-                if (compliments.length > 0) {
-                    setLoading(true);
-                    setTimeout(displayRandomCompliment, 400);  // Small delay for effect
-                }
-            });
+      async function fetchCompliments() {
+        setLoading(true);
+        try {
+          const res  = await fetch(COMPLIMENTS_URL);
+          const text = await res.text();
+          compliments = text.split('\n').filter(c=>c.trim()).map(c=>c.trim());
+          displayRandomCompliment();
+        } catch {
+          complimentText.textContent = 'Ohhhhh, want to compliment you but I can’t right now';
+          setLoading(false);
+        }
+      }
 
-            // Initial fetch
-            fetchCompliments();
-        });
-    </script>
+      function getRandomCompliment() {
+        let i;
+        do {
+          i = Math.floor(Math.random()*compliments.length);
+        } while (i === currentIndex && compliments.length > 1);
+        currentIndex = i;
+        return compliments[i];
+      }
+
+      function createPopWord() {
+        const word = popWords[Math.floor(Math.random()*popWords.length)];
+        const el   = document.createElement('div');
+        el.textContent = word;
+        el.className   = 'pop-word';
+        const r        = mainBox.getBoundingClientRect();
+        const placement= Math.floor(Math.random()*4);
+        const m=20, d=150;
+        let left, top;
+        if (placement===0) { left=r.left-m-Math.random()*d;         top=r.top+Math.random()*r.height; }
+        if (placement===1) { left=r.right+m+Math.random()*d;        top=r.top+Math.random()*r.height; }
+        if (placement===2) { left=r.left+Math.random()*r.width;     top=r.top-m-Math.random()*d; }
+        if (placement===3) { left=r.left+Math.random()*r.width;     top=r.bottom+m+Math.random()*d; }
+        left = Math.max(20, Math.min(window.innerWidth-100, left));
+        top  = Math.max(20, Math.min(window.innerHeight-50, top));
+        el.style.left       = `${left}px`;
+        el.style.top        = `${top}px`;
+        el.style.transform  = `rotate(${ -30 + Math.random()*60 }deg)`;
+        popWordContainer.appendChild(el);
+        setTimeout(() => popWordContainer.removeChild(el), 1800);
+      }
+
+      function displayRandomCompliment() {
+        if (!compliments.length) {
+          complimentText.textContent = 'No compliments!';
+          setLoading(false);
+          return;
+        }
+        setLoading(true);
+        setTimeout(() => {
+          complimentText.textContent = getRandomCompliment();
+          setLoading(false);
+          complimentContainer.classList.add('opacity-transition');
+          setTimeout(() => complimentContainer.classList.remove('opacity-transition'), 300);
+          const count = 3 + Math.floor(Math.random()*4);
+          for (let i=0; i<count; i++) setTimeout(createPopWord, i*200);
+        }, 400);
+      }
+
+      getComplimentBtn.addEventListener('mouseenter', () => {
+        getComplimentBtn.querySelector('i').style.animation = 'heartbeat 1s infinite';
+      });
+      getComplimentBtn.addEventListener('mouseleave', () => {
+        getComplimentBtn.querySelector('i').style.animation = '';
+      });
+      getComplimentBtn.addEventListener('click', () => {
+        if (compliments.length) displayRandomCompliment();
+      });
+
+      // kick it all off
+      fetchCompliments();
+    });
+  </script>
 </body>
 </html>
