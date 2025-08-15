@@ -74,6 +74,13 @@
     .tab-content.active {
       display: flex;
     }
+
+    /* Cuddly Convos special styling */
+    .convo-card { max-width: 720px; }
+    .heart-bullet { color: #FF7F50; margin-right: .5rem; }
+    .convo-important .q { font-size: 1.15rem; }
+    .convo-other .q { font-size: 1rem; }
+    .soft-pill { background: linear-gradient(90deg,#FFF7F2,#FFF); padding:.5rem 1rem; border-radius:999px; display:inline-block; }
   </style>
 </head>
 <body class="bg-gradient-to-r from-orange-100 to-rose-100 min-h-screen flex flex-col items-center">
@@ -85,6 +92,9 @@
     </button>
     <button id="tab-pops-btn" class="tab-btn">
       <i class="fas fa-music mr-2"></i>Top of the Pops
+    </button>
+    <button id="tab-convos-btn" class="tab-btn">
+      <i class="fas fa-heart mr-2"></i>Cuddly Convos
     </button>
   </div>
 
@@ -129,7 +139,7 @@
           <span>Interlude 1</span>
           <audio controls src="Top%20of%20the%20Pops/Interlude%201.m4a" class="ml-auto"></audio>
         </li>
-    	<li class="flex items-center space-x-3">
+      	<li class="flex items-center space-x-3">
           <i class="fas fa-heart text-[#FF7F50]"></i>
           <span>Track 3</span>
           <audio controls src="Top%20of%20the%20Pops/Track%203.m4a" class="ml-auto"></audio>
@@ -149,7 +159,7 @@
           <span>Interlude 2</span>
           <audio controls src="Top%20of%20the%20Pops/Interlude%202.m4a" class="ml-auto"></audio>
         </li>
-    	<li class="flex items-center space-x-3">
+      	<li class="flex items-center space-x-3">
           <i class="fas fa-heart text-[#FF7F50]"></i>
           <span>Track 6 - Outro</span>
           <audio controls src="Top%20of%20the%20Pops/Track%206%20-%20Outro.m4a" class="ml-auto"></audio>
@@ -158,31 +168,69 @@
     </div>
   </div>
 
+  <!-- CUDDLY CONVOS TAB CONTENT -->
+  <div id="tab-convos" class="tab-content">
+    <div class="bg-white shadow-2xl rounded-2xl p-8 text-center convo-card w-full mx-4 relative overflow-hidden">
+      <h1 class="text-3xl font-bold text-[#FF7F50] mb-4">
+        <i class="fa-light fa-circle-heart text-[#FF7F50] mx-2"></i>
+        Cuddly Convos
+        <i class="fa-light fa-circle-heart text-[#FF7F50] mx-2"></i>
+      </h1>
+      <p class="mb-6 text-gray-600">Mwwwwwahhhhhh. Want to chew on you 💕</p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="text-xl font-semibold text-[#FF7F50]">Important Questions</h2>
+            
+          </div>
+          <ol id="convos-important" class="space-y-3 convo-important">
+            <!-- Filled by JS -->
+          </ol>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="text-xl font-semibold text-[#FF7F50]">Other Questions</h2>
+            <div class="flex items-center space-x-2">
+              <button id="shuffle-convos" class="tab-btn text-sm py-1 px-3">Shuffle</button>
+            </div>
+          </div>
+          <ul id="convos-other" class="space-y-2 convo-other">
+            <!-- Filled by JS -->
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      // ——— Tab logic ———
-      const complimentsBtn  = document.getElementById('tab-compliments-btn');
-      const popsBtn         = document.getElementById('tab-pops-btn');
-      const tabCompliments  = document.getElementById('tab-compliments');
-      const tabPops         = document.getElementById('tab-pops');
+      // ——— Tab logic (now supports 3 tabs) ———
+      const buttons = {
+        compliments: document.getElementById('tab-compliments-btn'),
+        pops: document.getElementById('tab-pops-btn'),
+        convos: document.getElementById('tab-convos-btn')
+      };
+      const tabs = {
+        compliments: document.getElementById('tab-compliments'),
+        pops: document.getElementById('tab-pops'),
+        convos: document.getElementById('tab-convos')
+      };
 
-      function showTab(tab) {
-        complimentsBtn.classList.remove('active');
-        popsBtn.classList.remove('active');
-        tabCompliments.classList.remove('active');
-        tabPops.classList.remove('active');
-
-        if (tab === 'compliments') {
-          complimentsBtn.classList.add('active');
-          tabCompliments.classList.add('active');
-        } else {
-          popsBtn.classList.add('active');
-          tabPops.classList.add('active');
-        }
+      function showTab(tabKey) {
+        // clear all
+        Object.values(buttons).forEach(b=>b.classList.remove('active'));
+        Object.values(tabs).forEach(t=>t.classList.remove('active'));
+        // set active
+        buttons[tabKey].classList.add('active');
+        tabs[tabKey].classList.add('active');
       }
 
-      complimentsBtn.addEventListener('click', () => showTab('compliments'));
-      popsBtn.addEventListener('click', () => showTab('pops'));
+      buttons.compliments.addEventListener('click', ()=>showTab('compliments'));
+      buttons.pops.addEventListener('click', ()=>showTab('pops'));
+      buttons.convos.addEventListener('click', ()=>showTab('convos'));
 
 
       // ——— Compliment generator logic ———
@@ -194,7 +242,7 @@
       const mainBox             = complimentContainer.closest('.bg-white');
 
       const COMPLIMENTS_URL = 'https://raw.githubusercontent.com/BenGoodair/compliments/main/compliments.txt';
-      const popWords = ["MWAH","KHOM","GRAB","Squeeeeze","rubbiees","POUNCE","cuddles","chomp","eat me","nuzzzleess","mümmeln","kisssiieeeeees","smooochieeess","my puddddinggg","mwwwwah","mwah mwah mwah"];
+      const popWords = ["MWAH","KHOM","GRAB","Squeeeeze","rubbiees","POUNCE","cuddles","chomp","eat me","nuzzzleess","m\u00fcmmeln","kisssiieeeeees","smooochieeess","my puddddinggg","mwwwwah","mwah mwah mwah"];
 
       let compliments = [], currentIndex = -1;
 
@@ -211,7 +259,7 @@
           compliments = text.split('\n').filter(c=>c.trim()).map(c=>c.trim());
           displayRandomCompliment();
         } catch {
-          complimentText.textContent = 'Ohhhhh, want to compliment you but I can’t right now';
+          complimentText.textContent = 'Ohhhhh, want to compliment you but I can\'t right now';
           setLoading(false);
         }
       }
@@ -276,6 +324,75 @@
 
       // kick it all off
       fetchCompliments();
+
+
+      // ——— Cuddly Convos logic ———
+      // Questions provided by you (embedded to avoid external fetch fragility)
+      const importantConversations = [
+        "How to know a partner won't harm you and/or when to have children?",
+        "What does it mean to be married?",
+        "What are our expectations for Canada?",
+        "How to see eachother's souls better?",
+        "Who is in, and who is out, of our lives, and why?"
+      ];
+
+      // You provided 5 'other' questions in the file you pasted. The design asked for 10 other questions,
+      // so I kept your 5 and added 5 gentle suggested prompts to reach 10. You can edit these directly below.
+      const otherConversations = [
+        "Is potato a Lucas and faking it for pudding?",
+        "How has our philosophy to the banana changed since 2023?",
+        "What secret sneaky life ambitions do we hold?",
+        "What makes you feel most yourself?",
+        "Do we want a hobby together?",
+        // --- User-provided extras ---
+        "What is the most 'us' thing in the world, ie. what defines our spirit?",
+        "What inspires us about the other person?",
+        "What scares us when we think about a future together?",
+        "What is the happiest we have ever felt together?",
+        "Are there more mediums of communication we don't currently use?"
+      ];
+
+      const importantList = document.getElementById('convos-important');
+      const otherList = document.getElementById('convos-other');
+      const shuffleBtn = document.getElementById('shuffle-convos');
+
+      function renderImportant() {
+        importantList.innerHTML = '';
+        importantConversations.forEach((q, i) => {
+          const li = document.createElement('li');
+          li.className = 'flex items-start';
+          li.innerHTML = `\n            <div class=\"mr-3\">\n              <i class=\"fas fa-heart heart-bullet text-2xl\"></i>\n            </div>\n            <div>\n              <div class=\"q font-semibold text-gray-800\">${i+1}. ${q}</div>\n            </div>`;
+          importantList.appendChild(li);
+        });
+      }
+
+      function renderOther(arr) {
+        otherList.innerHTML = '';
+        arr.forEach((q, i) => {
+          const li = document.createElement('li');
+          li.className = 'flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50';
+          li.innerHTML = `\n            <i class=\"fas fa-heart heart-bullet\"></i>\n            <span class=\"q text-gray-700\">${i+1}. ${q}</span>`;
+          otherList.appendChild(li);
+        });
+      }
+
+      function shuffleArray(a) {
+        const b = a.slice();
+        for (let i = b.length -1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i+1));
+          [b[i], b[j]] = [b[j], b[i]];
+        }
+        return b;
+      }
+
+      shuffleBtn.addEventListener('click', ()=>{
+        renderOther(shuffleArray(otherConversations));
+      });
+
+      // initial render
+      renderImportant();
+      renderOther(otherConversations);
+
     });
   </script>
 </body>
