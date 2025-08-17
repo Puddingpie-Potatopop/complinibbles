@@ -81,6 +81,64 @@
     .convo-important .q { font-size: 1.15rem; }
     .convo-other .q { font-size: 1rem; }
     .soft-pill { background: linear-gradient(90deg,#FFF7F2,#FFF); padding:.5rem 1rem; border-radius:999px; display:inline-block; }
+
+    /* Suggestion form styles */
+    .suggestion-form {
+      background: linear-gradient(135deg, #FFF7F2, #FED7CC);
+      border: 2px dashed #FF7F50;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      margin-top: 1.5rem;
+    }
+    .suggestion-input {
+      width: 100%;
+      border: 2px solid #FF7F50;
+      border-radius: 0.5rem;
+      padding: 0.75rem;
+      font-size: 1rem;
+      resize: vertical;
+      min-height: 100px;
+    }
+    .suggestion-input:focus {
+      outline: none;
+      border-color: #FF6347;
+      box-shadow: 0 0 0 3px rgba(255, 127, 80, 0.1);
+    }
+    .submit-btn {
+      background-color: #FF7F50;
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .submit-btn:hover {
+      background-color: #FF6347;
+      transform: translateY(-1px);
+    }
+    .submit-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .status-message {
+      padding: 0.75rem;
+      border-radius: 0.5rem;
+      margin-top: 1rem;
+      font-weight: 500;
+    }
+    .status-success {
+      background-color: #D4F4DD;
+      color: #0F5132;
+      border: 1px solid #A3CFBB;
+    }
+    .status-error {
+      background-color: #F8D7DA;
+      color: #721C24;
+      border: 1px solid #F1AEB5;
+    }
   </style>
 </head>
 <body class="bg-gradient-to-r from-orange-100 to-rose-100 min-h-screen flex flex-col items-center">
@@ -202,6 +260,35 @@
         </div>
       </div>
 
+      <!-- NEW SUGGESTION FORM -->
+      <div class="suggestion-form">
+        <h3 class="text-lg font-semibold text-[#FF7F50] mb-3 flex items-center">
+          <i class="fas fa-lightbulb mr-2"></i>
+          Suggest a cuddly question my perfect pie
+        </h3>
+        <p class="text-sm text-gray-600 mb-4">Submit your question you perfect pop and it'll be sent to potato's GitHub!</p>
+        
+        <form id="suggestion-form">
+          <textarea 
+            id="question-input" 
+            class="suggestion-input" 
+            placeholder="What's a question you'd love for us to explore together? 💕"
+            maxlength="500"
+            required
+          ></textarea>
+          
+          <div class="flex justify-between items-center mt-3">
+            <span id="char-count" class="text-xs text-gray-500">0/500 characters</span>
+            <button type="submit" id="submit-btn" class="submit-btn">
+              <i class="fas fa-paper-plane mr-2"></i>
+              Send to Potatooooo
+            </button>
+          </div>
+        </form>
+        
+        <div id="status-message" class="hidden"></div>
+      </div>
+
     </div>
   </div>
 
@@ -242,7 +329,7 @@
       const mainBox             = complimentContainer.closest('.bg-white');
 
       const COMPLIMENTS_URL = 'https://raw.githubusercontent.com/BenGoodair/compliments/main/compliments.txt';
-      const popWords = ["MWAH","KHOM","GRAB","Squeeeeze","rubbiees","POUNCE","cuddles","chomp","eat me","nuzzzleess","m\u00fcmmeln","kisssiieeeeees","smooochieeess","my puddddinggg","mwwwwah","mwah mwah mwah"];
+      const popWords = ["MWAH","KHOM","GRAB","Squeeeeze","rubbiees","POUNCE","cuddles","chomp","eat me","nuzzzleess","mümmeln","kisssiieeeeees","smooochieeess","my puddddinggg","mwwwwah","mwah mwah mwah"];
 
       let compliments = [], currentIndex = -1;
 
@@ -361,7 +448,13 @@
         importantConversations.forEach((q, i) => {
           const li = document.createElement('li');
           li.className = 'flex items-start';
-          li.innerHTML = `\n            <div class=\"mr-3\">\n              <i class=\"fas fa-heart heart-bullet text-2xl\"></i>\n            </div>\n            <div>\n              <div class=\"q font-semibold text-gray-800\">${i+1}. ${q}</div>\n            </div>`;
+          li.innerHTML = `
+            <div class="mr-3">
+              <i class="fas fa-heart heart-bullet text-2xl"></i>
+            </div>
+            <div>
+              <div class="q font-semibold text-gray-800">${i+1}. ${q}</div>
+            </div>`;
           importantList.appendChild(li);
         });
       }
@@ -371,7 +464,9 @@
         arr.forEach((q, i) => {
           const li = document.createElement('li');
           li.className = 'flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50';
-          li.innerHTML = `\n            <i class=\"fas fa-heart heart-bullet\"></i>\n            <span class=\"q text-gray-700\">${i+1}. ${q}</span>`;
+          li.innerHTML = `
+            <i class="fas fa-heart heart-bullet"></i>
+            <span class="q text-gray-700">${i+1}. ${q}</span>`;
           otherList.appendChild(li);
         });
       }
@@ -392,6 +487,84 @@
       // initial render
       renderImportant();
       renderOther(otherConversations);
+
+
+      // ——— Question Suggestion Logic ———
+      const suggestionForm = document.getElementById('suggestion-form');
+      const questionInput = document.getElementById('question-input');
+      const charCount = document.getElementById('char-count');
+      const submitBtn = document.getElementById('submit-btn');
+      const statusMessage = document.getElementById('status-message');
+
+      // GitHub configuration
+      const GITHUB_CONFIG = {
+        owner: 'puddingpie-potatopop',  // Your GitHub username
+        repo: 'complinibbles',          // Your repo name
+      };
+
+      // Character counter
+      questionInput.addEventListener('input', () => {
+        const length = questionInput.value.length;
+        charCount.textContent = `${length}/500 characters`;
+        
+        if (length > 450) {
+          charCount.style.color = '#FF7F50';
+        } else {
+          charCount.style.color = '#6B7280';
+        }
+      });
+
+      // Form submission
+      suggestionForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const question = questionInput.value.trim();
+        if (!question) return;
+
+        // For now, we'll use the manual method since it's more secure
+        // You can implement a serverless function later if desired
+        showManualInstructions(question);
+        questionInput.value = '';
+        charCount.textContent = '0/500 characters';
+      });
+
+      function showStatus(message, type) {
+        statusMessage.textContent = message;
+        statusMessage.className = `status-message status-${type}`;
+        statusMessage.classList.remove('hidden');
+        
+        if (type === 'success') {
+          setTimeout(() => {
+            statusMessage.classList.add('hidden');
+          }, 5000);
+        }
+      }
+
+      function showManualInstructions(question) {
+        const githubUrl = `https://github.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/issues/new?title=${encodeURIComponent('💕 New Cuddly Convo Suggestion')}&body=${encodeURIComponent(`**Question:** ${question}\n\n_Submitted by the perfect puddingpie 🍮💕`)}`;
+        
+        showStatus(`✨ Mwah mwah mwah! Have some kissies while we wait! Mwwwwwwaaaaahhhhhh!...`, 'success');
+        
+        setTimeout(() => {
+          statusMessage.innerHTML = `
+            <div class="status-message status-success">
+              <p class="mb-3">✨ Ready to send your question to the Potatokopf!</p>
+              <p class="mb-3"><strong>Your question:</strong> "${question}"</p>
+              <a href="${githubUrl}" target="_blank" class="inline-block bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-700 transition">
+                <i class="fab fa-github mr-2"></i>Send it to the potatopop
+              </a>
+              <p class="text-xs mt-2 opacity-75">This will open GitHub in a new tab with your question pre-filled!</p>
+            </div>
+          `;
+          statusMessage.classList.remove('hidden');
+        }, 5000);
+      }
+
+      async function createGitHubIssue(question) {
+        // This function is kept for potential future serverless implementation
+        // For security, we're using the manual method above
+        return false;
+      }
 
     });
   </script>
