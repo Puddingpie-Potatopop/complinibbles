@@ -259,7 +259,7 @@
 ════════════════════════════════════════════════ -->
 <div id="tab-game" class="tab-content">
   <div id="game-tab-inner">
-    <h1 class="text-3xl font-bold text-[#FF7F50] mb-2" style="text-shadow:1px 1px 0 #FED7CC, 2px 2px 0 #ffb8a0;">🍬 Snack Pack Match</h1>
+    <h1 class="text-3xl font-bold text-[#FF7F50] mb-2" style="text-shadow:1px 1px 0 #FED7CC, 2px 2px 0 #ffb8a0;">Snack Pack Match</h1>
     <div id="game-ui-row">
       <div id="score-box">Score: <span id="score-val">0</span></div>
       <div id="best-box">Best: <span id="best-val">0</span></div>
@@ -286,7 +286,7 @@
 <!-- Game overlay (inside body, not inside tab, so it can go fullscreen) -->
 <div id="game-overlay">
   <div id="game-overlay-box">
-    <h2>🍬 Snack Pack Match</h2>
+    <h2>Snack Pack Match</h2>
     <p>Drop little nibbles to merge them!<br>🥔 + 🍮 = ❤️ <br>Nuzzle pairs to do such a good job.<br>Get nice and close and cuddly</p>
     <button onclick="startGame()">Play!</button>
   </div>
@@ -510,7 +510,7 @@ const SPAWN_POOL=[];
 SNACKS.forEach(s=>{ for(let i=0;i<s.weight;i++) SPAWN_POOL.push(s); });
 
 // Pop words for merges — same flavour as the compliments tab
-const MERGE_WORDS = ["MWAH","KHOM","GRAB","Squeeeeze","rubbiees","POUNCE","cuddles","chomp","eat me","nuzzzleess","mümmeln","kisssiieeeeees","smooochieeess","my puddddinggg","mwwwwah","mwah mwah mwah"];
+const MERGE_WORDS = ["MWAH","KHOM","GRAB","Squeeeeze","rubbiees","POUNCE","cuddles","chomp","nuzzzleess","kisssiieeeeees","smooochieeess","my puddddinggg","mwwwwah","mwah mwah mwah", "BIG FAT KISS"];
 
 function canMerge(la,lb){
   if((la==='potato'&&lb==='pudding')||(la==='pudding'&&lb==='potato')) return true;
@@ -585,8 +585,8 @@ function spawnGamePopWord(canvasX, canvasY) {
   const rect = gameCanvas.getBoundingClientRect();
   const scaleX = rect.width / CW;
   const scaleY = rect.height / CH;
-  el.style.left = `${canvasX * scaleX}px`;
-  el.style.top  = `${canvasY * scaleY}px`;
+  el.style.left = `${10 + Math.random() * 80}vw`;
+  el.style.top  = `${10 + Math.random() * 80}vh`;
   el.style.color = ['#FF7F50','#FF6347','#ff9a9e','#c7497a','#ff6b9d'][Math.floor(Math.random()*5)];
   gamePopsLayer.appendChild(el);
   setTimeout(()=>{ if(el.parentNode) gamePopsLayer.removeChild(el); },1300);
