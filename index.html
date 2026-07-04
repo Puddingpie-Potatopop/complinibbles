@@ -588,8 +588,8 @@ function spawnGamePopWord(canvasX, canvasY) {
   el.style.left = `${10 + Math.random() * 80}vw`;
   el.style.top  = `${10 + Math.random() * 80}vh`;
   el.style.color = ['#FF7F50','#FF6347','#ff9a9e','#c7497a','#ff6b9d'][Math.floor(Math.random()*5)];
-  gamePopsLayer.appendChild(el);
-  setTimeout(()=>{ if(el.parentNode) gamePopsLayer.removeChild(el); },1300);
+  document.getElementById('pop-word-container').appendChild(el);
+  setTimeout(()=>{ if(el.parentNode) el.parentNode.removeChild(el); },1300);
 }
 
 // ── Confetti ──────────────────────────────────────────────────────────────────
