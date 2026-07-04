@@ -287,7 +287,7 @@
 <div id="game-overlay">
   <div id="game-overlay-box">
     <h2>🍬 Snack Pack Match</h2>
-    <p>Drop snacks to merge them!<br>🥔 Potato + 🍮 Pudding = ❤️ Love<br>Match pairs to climb the chain.<br>Don't let snacks reach the red line!</p>
+    <p>Drop little nibbles to merge them!<br>🥔 + 🍮 = ❤️ <br>Nuzzle pairs to do such a good job.<br>Get nice and close and cuddly</p>
     <button onclick="startGame()">Play!</button>
   </div>
 </div>
@@ -477,7 +477,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function showStatus(msg,type){ statusMessage.textContent=msg; statusMessage.className=`status-message status-${type}`; statusMessage.classList.remove('hidden'); if(type==='success') setTimeout(()=>statusMessage.classList.add('hidden'),5000); }
   function showManualInstructions(question) {
     const url=`https://github.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/issues/new?title=${encodeURIComponent('💕 New Cuddly Convo Suggestion')}&body=${encodeURIComponent(`**Question:** ${question}\n\n_Submitted by the perfect puddingpie 🍮💕`)}`;
-    showStatus('✨ Mwah mwah mwah! Have some kissies while we wait! Mwwwwwwaaaaahhhhhh!...','success');
+    showStatus('✨ Mwah mwah mwah! Have some kissies while we wait! Mwwwwwwaaaaahhhhhh!...','mwah');
     setTimeout(()=>{
       statusMessage.innerHTML=`<div class="status-message status-success"><p class="mb-3">✨ Ready to send your question to the Potatokopf!</p><p class="mb-3"><strong>Your question:</strong> "${question}"</p><a href="${url}" target="_blank" class="inline-block bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-700 transition"><i class="fab fa-github mr-2"></i>Send it to the potatopop</a><p class="text-xs mt-2 opacity-75">This will open GitHub in a new tab with your question pre-filled!</p></div>`;
       statusMessage.classList.remove('hidden');
@@ -510,7 +510,7 @@ const SPAWN_POOL=[];
 SNACKS.forEach(s=>{ for(let i=0;i<s.weight;i++) SPAWN_POOL.push(s); });
 
 // Pop words for merges — same flavour as the compliments tab
-const MERGE_WORDS = ["MWAH","KHOM","💕","SMOOCH","yum!","GRAB","squeeze","chomp","KISSSSS","nuzzle","mwwwah","❤️","cuties","POP!","BONK","merge!","oooh","🍮+🥔"];
+const MERGE_WORDS = ["MWAH","KHOM","GRAB","Squeeeeze","rubbiees","POUNCE","cuddles","chomp","eat me","nuzzzleess","mümmeln","kisssiieeeeees","smooochieeess","my puddddinggg","mwwwwah","mwah mwah mwah"];
 
 function canMerge(la,lb){
   if((la==='potato'&&lb==='pudding')||(la==='pudding'&&lb==='potato')) return true;
@@ -691,13 +691,13 @@ function triggerVictory(){
   if(victory)return;victory=true;gameActive=false;canDrop=false;rmListeners();
   startConfetti();
   setTimeout(()=>{
-    document.getElementById('game-overlay-box').innerHTML=`<h2>🏆 You Win!</h2><p>You completed the Snack Pack chain!<br>Final score: <strong>${score}</strong></p><button onclick="startGame()">Play again</button>`;
+    document.getElementById('game-overlay-box').innerHTML=`<h2>🏆 Puds Wins!</h2><p>Puds did so well! mwah mwah mwah!<br>Final score: <strong>${score}</strong></p><button onclick="startGame()">Play again</button>`;
     document.getElementById('game-overlay').style.display='';
   },1800);
 }
 function triggerGameOver(){
   if(!gameActive)return;gameActive=false;canDrop=false;rmListeners();
-  document.getElementById('game-overlay-box').innerHTML=`<h2>😅 Oh no!</h2><p>Your snacks overflowed!<br>Final score: <strong>${score}</strong>${score===bestScore&&score>0?'<br>🏆 New best score!':''}</p><button onclick="startGame()">Play again</button>`;
+  document.getElementById('game-overlay-box').innerHTML=`<h2>Puds did a thing! MWAH!<br>Final score: <strong>${score}</strong>${score===bestScore&&score>0?'<br>🏆 New best score!':''}</p><button onclick="startGame()">Play again</button>`;
   document.getElementById('game-overlay').style.display='';
 }
 function rmListeners(){
