@@ -1,571 +1,745 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Pudding Compliments & Top of the Pops</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-  <style>
-    /* Custom animations and styles */
-    @keyframes heartbeat { 
-      0% { transform: scale(1); } 
-      50% { transform: scale(1.1); } 
-      100% { transform: scale(1); } 
-    }
-    @keyframes fadeInOut {
-      0% { opacity: 0; transform: scale(0.8); }
-      15% { opacity: 1; transform: scale(1.1); }
-      85% { opacity: 1; transform: scale(1.1); }
-      100% { opacity: 0; transform: scale(1); }
-    }
-    .pop-word {
-      position: absolute;
-      font-weight: bold;
-      color: #FF7F50;
-      font-size: 1.5rem;
-      animation: fadeInOut 1.5s forwards;
-      text-shadow: 1px 1px 3px rgba(255, 127, 80, 0.3);
-      z-index: 10;
-    }
-    .opacity-transition {
-      opacity: 0;
-      transition: opacity 0.3s ease;
-    }
-    #pop-word-container {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: 20;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pudding & Potato 💕</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+<style>
+  /* ── Shared animations ── */
+  @keyframes heartbeat {
+    0%   { transform: scale(1); }
+    50%  { transform: scale(1.1); }
+    100% { transform: scale(1); }
+  }
+  @keyframes fadeInOut {
+    0%   { opacity: 0; transform: scale(0.8); }
+    15%  { opacity: 1; transform: scale(1.1); }
+    85%  { opacity: 1; transform: scale(1.1); }
+    100% { opacity: 0; transform: scale(1); }
+  }
+  @keyframes popWordGame {
+    0%   { opacity: 0; transform: translate(-50%,-50%) scale(0.6) rotate(var(--rot)); }
+    20%  { opacity: 1; transform: translate(-50%,-50%) scale(1.2) rotate(var(--rot)); }
+    75%  { opacity: 1; transform: translate(-50%,-70%) scale(1.1) rotate(var(--rot)); }
+    100% { opacity: 0; transform: translate(-50%,-120%) scale(0.9) rotate(var(--rot)); }
+  }
 
-    /* Tab styles */
-    .tab-btn {
-      padding: 0.5rem 1rem;
-      font-weight: 600;
-      border-top-left-radius: 1rem;
-      border-top-right-radius: 1rem;
-      background-color: #FED7CC;
-      color: #FF7F50;
-      border: 2px solid #FF7F50;
-      border-bottom: none;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-    .tab-btn:hover {
-      background-color: #FFF;
-      transform: translateY(-2px);
-    }
-    .tab-btn.active {
-      background-color: #FFF;
-      color: #FF7F50;
-      border-top: 4px solid #FF7F50;
-      transform: translateY(-2px);
-    }
-    .tab-content {
-      display: none;
-      width: 100%;
-      flex-grow: 1;
-      align-items: center;
-      justify-content: center;
-    }
-    .tab-content.active {
-      display: flex;
-    }
+  .pop-word {
+    position: absolute;
+    font-weight: bold;
+    color: #FF7F50;
+    font-size: 1.5rem;
+    animation: fadeInOut 1.5s forwards;
+    text-shadow: 1px 1px 3px rgba(255,127,80,0.3);
+    z-index: 10;
+    pointer-events: none;
+  }
+  .pop-word-game {
+    position: absolute;
+    font-weight: 900;
+    color: #FF7F50;
+    font-size: 1.1rem;
+    pointer-events: none;
+    animation: popWordGame 1.2s forwards;
+    text-shadow: 0 2px 6px rgba(255,127,80,0.5), 1px 1px 0 #fff;
+    white-space: nowrap;
+    z-index: 50;
+  }
+  #pop-word-container {
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none; z-index: 20;
+  }
 
-    /* Cuddly Convos special styling */
-    .convo-card { max-width: 720px; }
-    .heart-bullet { color: #FF7F50; margin-right: .5rem; }
-    .convo-important .q { font-size: 1.15rem; }
-    .convo-other .q { font-size: 1rem; }
-    .soft-pill { background: linear-gradient(90deg,#FFF7F2,#FFF); padding:.5rem 1rem; border-radius:999px; display:inline-block; }
+  /* ── Tab styles (matching original) ── */
+  .tab-btn {
+    padding: 0.5rem 1rem;
+    font-weight: 600;
+    border-top-left-radius: 1rem;
+    border-top-right-radius: 1rem;
+    background-color: #FED7CC;
+    color: #FF7F50;
+    border: 2px solid #FF7F50;
+    border-bottom: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: inherit;
+  }
+  .tab-btn:hover { background-color: #FFF; transform: translateY(-2px); }
+  .tab-btn.active {
+    background-color: #FFF;
+    color: #FF7F50;
+    border-top: 4px solid #FF7F50;
+    transform: translateY(-2px);
+  }
+  .tab-content { display: none; width: 100%; flex-grow: 1; align-items: flex-start; justify-content: center; padding-top: 1.5rem; }
+  .tab-content.active { display: flex; }
 
-    /* Suggestion form styles */
-    .suggestion-form {
-      background: linear-gradient(135deg, #FFF7F2, #FED7CC);
-      border: 2px dashed #FF7F50;
-      border-radius: 1rem;
-      padding: 1.5rem;
-      margin-top: 1.5rem;
-    }
-    .suggestion-input {
-      width: 100%;
-      border: 2px solid #FF7F50;
-      border-radius: 0.5rem;
-      padding: 0.75rem;
-      font-size: 1rem;
-      resize: vertical;
-      min-height: 100px;
-    }
-    .suggestion-input:focus {
-      outline: none;
-      border-color: #FF6347;
-      box-shadow: 0 0 0 3px rgba(255, 127, 80, 0.1);
-    }
-    .submit-btn {
-      background-color: #FF7F50;
-      color: white;
-      border: none;
-      padding: 0.75rem 1.5rem;
-      border-radius: 0.5rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-    .submit-btn:hover {
-      background-color: #FF6347;
-      transform: translateY(-1px);
-    }
-    .submit-btn:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none;
-    }
-    .status-message {
-      padding: 0.75rem;
-      border-radius: 0.5rem;
-      margin-top: 1rem;
-      font-weight: 500;
-    }
-    .status-success {
-      background-color: #D4F4DD;
-      color: #0F5132;
-      border: 1px solid #A3CFBB;
-    }
-    .status-error {
-      background-color: #F8D7DA;
-      color: #721C24;
-      border: 1px solid #F1AEB5;
-    }
-  </style>
+  /* ── Cuddly Convos ── */
+  .convo-card { max-width: 720px; }
+  .heart-bullet { color: #FF7F50; margin-right: .5rem; }
+  .convo-important .q { font-size: 1.15rem; }
+  .convo-other .q { font-size: 1rem; }
+  .suggestion-form {
+    background: linear-gradient(135deg, #FFF7F2, #FED7CC);
+    border: 2px dashed #FF7F50;
+    border-radius: 1rem;
+    padding: 1.5rem;
+    margin-top: 1.5rem;
+  }
+  .suggestion-input {
+    width: 100%; border: 2px solid #FF7F50; border-radius: 0.5rem;
+    padding: 0.75rem; font-size: 1rem; resize: vertical; min-height: 100px;
+    font-family: inherit;
+  }
+  .suggestion-input:focus { outline: none; border-color: #FF6347; box-shadow: 0 0 0 3px rgba(255,127,80,0.1); }
+  .submit-btn {
+    background-color: #FF7F50; color: white; border: none;
+    padding: 0.75rem 1.5rem; border-radius: 0.5rem;
+    font-weight: 600; cursor: pointer; transition: all 0.3s ease; font-family: inherit;
+  }
+  .submit-btn:hover { background-color: #FF6347; transform: translateY(-1px); }
+  .status-message { padding: 0.75rem; border-radius: 0.5rem; margin-top: 1rem; font-weight: 500; }
+  .status-success { background-color: #D4F4DD; color: #0F5132; border: 1px solid #A3CFBB; }
+  .status-error   { background-color: #F8D7DA; color: #721C24; border: 1px solid #F1AEB5; }
+
+  /* ── Game tab ── */
+  #game-tab-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-bottom: 20px;
+    width: 100%;
+  }
+  #game-ui-row {
+    display: flex; gap: 16px; align-items: center; margin-bottom: 8px;
+    color: #FF7F50; font-weight: 700; font-size: 1rem;
+  }
+  #score-box, #best-box {
+    background: #FFF7F2; border: 2px solid #FF7F50;
+    border-radius: 20px; padding: 4px 16px;
+  }
+  #game-wrapper { position: relative; cursor: crosshair; }
+  #game-canvas {
+    display: block; border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(255,127,80,0.2), inset 0 0 0 3px rgba(255,127,80,0.3);
+    background: #FFF7F2;
+  }
+  #next-label {
+    position: absolute; top: -36px; right: 0;
+    color: #FF7F50; font-size: 0.8rem; font-weight: 700; text-align: center;
+  }
+  #chain-guide {
+    margin-top: 10px; display: flex; align-items: center; gap: 3px;
+    background: rgba(255,255,255,0.8); border: 2px solid #FED7CC;
+    border-radius: 20px; padding: 5px 12px;
+    font-size: 1rem; flex-wrap: wrap; justify-content: center; max-width: 400px;
+  }
+  .chain-arrow { color: #FF7F50; font-size: 0.8rem; }
+  #game-overlay {
+    position: fixed; inset: 0; background: rgba(255,127,80,0.18);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100; backdrop-filter: blur(6px);
+  }
+  #game-overlay-box {
+    background: linear-gradient(135deg, #fff9f0, #fff0f5);
+    border-radius: 24px; padding: 36px 40px; text-align: center;
+    box-shadow: 0 20px 60px rgba(255,127,80,0.25); max-width: 340px;
+    border: 2px solid #FED7CC;
+  }
+  #game-overlay-box h2 { font-size: 2rem; margin-bottom: 8px; color: #FF7F50; font-weight: 700; }
+  #game-overlay-box p  { color: #888; margin-bottom: 20px; font-size: 0.95rem; line-height: 1.5; }
+  #game-overlay-box button {
+    background: #FF7F50; color: white; border: none;
+    border-radius: 50px; padding: 12px 36px; font-size: 1.1rem;
+    font-weight: 700; cursor: pointer; font-family: inherit;
+    box-shadow: 0 4px 15px rgba(255,127,80,0.35);
+    transition: transform 0.1s, box-shadow 0.1s;
+  }
+  #game-overlay-box button:hover { background: #FF6347; transform: translateY(-2px); }
+  #confetti-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 99; }
+  .game-pop-layer { position: absolute; inset: 0; pointer-events: none; overflow: hidden; border-radius: 16px; }
+
+  .opacity-transition { opacity: 0; transition: opacity 0.3s ease; }
+  .hidden { display: none !important; }
+</style>
 </head>
-<body class="bg-gradient-to-r from-orange-100 to-rose-100 min-h-screen flex flex-col items-center">
+<body class="bg-gradient-to-r from-orange-100 to-rose-100 min-h-screen flex flex-col items-center pb-8">
 
-  <!-- NAV TABS -->
-  <div class="mt-8 flex space-x-2">
-    <button id="tab-compliments-btn" class="tab-btn active">
-      <i class="fas fa-comment-dots mr-2"></i>Compliments
-    </button>
-    <button id="tab-pops-btn" class="tab-btn">
-      <i class="fas fa-music mr-2"></i>Top of the Pops
-    </button>
-    <button id="tab-convos-btn" class="tab-btn">
-      <i class="fas fa-heart mr-2"></i>Cuddly Convos
+<div id="pop-word-container"></div>
+<canvas id="confetti-canvas"></canvas>
+
+<!-- ── NAV TABS ── -->
+<div class="mt-8 flex flex-wrap gap-1 justify-center">
+  <button id="tab-compliments-btn" class="tab-btn active"><i class="fas fa-comment-dots mr-2"></i>Compliments</button>
+  <button id="tab-pops-btn"        class="tab-btn"><i class="fas fa-music mr-2"></i>Top of the Pops</button>
+  <button id="tab-convos-btn"      class="tab-btn"><i class="fas fa-heart mr-2"></i>Cuddly Convos</button>
+  <button id="tab-game-btn"        class="tab-btn"><i class="fas fa-gamepad mr-2"></i>Snack Pack Match</button>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     TAB 1 — COMPLIMENTS
+════════════════════════════════════════════════ -->
+<div id="tab-compliments" class="tab-content active">
+  <div class="bg-white shadow-2xl rounded-2xl p-8 text-center max-w-md w-full mx-4 relative overflow-hidden">
+    <h1 class="text-3xl font-bold text-[#FF7F50] mb-6">Compliments for my pudding<br>💕🍮💕</h1>
+    <div id="compliment-container" class="min-h-[200px] flex items-center justify-center relative">
+      <p id="compliment-text" class="text-xl text-gray-800 leading-relaxed"></p>
+      <div id="loading" class="animate-pulse"><i class="fas fa-heart text-[#FF7F50] text-4xl"></i></div>
+    </div>
+    <button id="get-compliment" class="mt-6 bg-[#FF7F50] hover:bg-[#FF6347] text-white font-bold py-3 px-6 rounded-full transition transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#FF7F50]">
+      <i class="fas fa-heart mr-2"></i>Give the pudding a compliment!
     </button>
   </div>
+</div>
 
-  <!-- COMPLIMENTS TAB CONTENT -->
-  <div id="tab-compliments" class="tab-content active">
-    <div class="bg-white shadow-2xl rounded-2xl p-8 text-center max-w-md w-full mx-4 relative overflow-hidden">
-      <h1 class="text-3xl font-bold text-[#FF7F50] mb-6">Compliments for my pudding<br>  💕🍮💕</h1>
-      <div id="pop-word-container"></div>
-      <div id="compliment-container" class="min-h-[200px] flex items-center justify-center relative">
-        <p id="compliment-text" class="text-xl text-gray-800 leading-relaxed"></p>
-        <div id="loading" class="animate-pulse">
-          <i class="fas fa-heart text-[#FF7F50] text-4xl"></i>
-        </div>
+<!-- ════════════════════════════════════════════════
+     TAB 2 — TOP OF THE POPS
+════════════════════════════════════════════════ -->
+<div id="tab-pops" class="tab-content">
+  <div class="bg-white shadow-2xl rounded-2xl p-8 text-center max-w-md w-full mx-4">
+    <h1 class="text-3xl font-bold text-[#FF7F50] mb-6">
+      <i class="fas fa-heart text-[#FF7F50] animate-pulse mx-2"></i>Top of the Pops<i class="fas fa-heart text-[#FF7F50] animate-pulse mx-2"></i>
+    </h1>
+    <ul class="space-y-4 text-left">
+      <li class="flex items-center space-x-3"><i class="fas fa-heart text-[#FF7F50]"></i><span>Track 1</span><audio controls src="Top%20of%20the%20Pops/Track%201.m4a" class="ml-auto"></audio></li>
+      <li class="flex items-center space-x-3"><i class="fas fa-heart text-[#FF7F50]"></i><span>Track 2</span><audio controls src="Top%20of%20the%20Pops/Track%202.m4a" class="ml-auto"></audio></li>
+      <li class="flex items-center space-x-3"><i class="fas fa-heart text-[#FF7F50]"></i><span>Interlude 1</span><audio controls src="Top%20of%20the%20Pops/Interlude%201.m4a" class="ml-auto"></audio></li>
+      <li class="flex items-center space-x-3"><i class="fas fa-heart text-[#FF7F50]"></i><span>Track 3</span><audio controls src="Top%20of%20the%20Pops/Track%203.m4a" class="ml-auto"></audio></li>
+      <li class="flex items-center space-x-3"><i class="fas fa-heart text-[#FF7F50]"></i><span>Track 4</span><audio controls src="Top%20of%20the%20Pops/Track%204.m4a" class="ml-auto"></audio></li>
+      <li class="flex items-center space-x-3"><i class="fas fa-heart text-[#FF7F50]"></i><span>Track 5</span><audio controls src="Top%20of%20the%20Pops/Track%205.m4a" class="ml-auto"></audio></li>
+      <li class="flex items-center space-x-3"><i class="fas fa-heart text-[#FF7F50]"></i><span>Interlude 2</span><audio controls src="Top%20of%20the%20Pops/Interlude%202.m4a" class="ml-auto"></audio></li>
+      <li class="flex items-center space-x-3"><i class="fas fa-heart text-[#FF7F50]"></i><span>Track 6 - Outro</span><audio controls src="Top%20of%20the%20Pops/Track%206%20-%20Outro.m4a" class="ml-auto"></audio></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     TAB 3 — CUDDLY CONVOS
+════════════════════════════════════════════════ -->
+<div id="tab-convos" class="tab-content">
+  <div class="bg-white shadow-2xl rounded-2xl p-8 text-center convo-card w-full mx-4">
+    <h1 class="text-3xl font-bold text-[#FF7F50] mb-4">Cuddly Convos</h1>
+    <p class="mb-6 text-gray-600">Mwwwwwahhhhhh. Want to chew on you 💕</p>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
+      <div>
+        <h2 class="text-xl font-semibold text-[#FF7F50] mb-3">Important Questions</h2>
+        <ol id="convos-important" class="space-y-3 convo-important"></ol>
       </div>
-      <button id="get-compliment" class="mt-6 bg-[#FF7F50] hover:bg-[#FF6347] text-white font-bold py-3 px-6 rounded-full transition transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#FF7F50]">
-        <i class="fas fa-heart mr-2"></i>Give the pudding a compliment!
-      </button>
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-xl font-semibold text-[#FF7F50]">Other Questions</h2>
+          <button id="shuffle-convos" class="tab-btn text-sm py-1 px-3">Shuffle</button>
+        </div>
+        <ul id="convos-other" class="space-y-2 convo-other"></ul>
+      </div>
+    </div>
+    <div class="suggestion-form">
+      <h3 class="text-lg font-semibold text-[#FF7F50] mb-3 flex items-center">
+        <i class="fas fa-lightbulb mr-2"></i>KHOM! Suggest a cuddly question my perfect pie
+      </h3>
+      <p class="text-sm text-gray-600 mb-4">Tappa tappa and it'll be sent to potato's GitHub</p>
+      <form id="suggestion-form">
+        <textarea id="question-input" class="suggestion-input" placeholder="What's a question for the banana? 💕" maxlength="500" required></textarea>
+        <div class="flex justify-between items-center mt-3">
+          <span id="char-count" class="text-xs text-gray-500">0/500 characters</span>
+          <button type="submit" id="submit-btn" class="submit-btn"><i class="fas fa-paper-plane mr-2"></i>Send to Potatooooo</button>
+        </div>
+      </form>
+      <div id="status-message" class="hidden"></div>
     </div>
   </div>
+</div>
 
-  <!-- TOP OF THE POPS TAB CONTENT -->
-  <div id="tab-pops" class="tab-content">
-    <div class="bg-white shadow-2xl rounded-2xl p-8 text-center max-w-md w-full mx-4 relative overflow-hidden">
-      <h1 class="text-3xl font-bold text-[#FF7F50] mb-6">
-        <i class="fas fa-heart text-[#FF7F50] animate-pulse mx-2"></i>
-        Top of the Pops
-        <i class="fas fa-heart text-[#FF7F50] animate-pulse mx-2"></i>
-      </h1>
-      <ul class="space-y-4 text-left">
-        <li class="flex items-center space-x-3">
-          <i class="fas fa-heart text-[#FF7F50]"></i>
-          <span>Track 1</span>
-          <audio controls src="Top%20of%20the%20Pops/Track%201.m4a" class="ml-auto"></audio>
-        </li>
-        <li class="flex items-center space-x-3">
-          <i class="fas fa-heart text-[#FF7F50]"></i>
-          <span>Track 2</span>
-          <audio controls src="Top%20of%20the%20Pops/Track%202.m4a" class="ml-auto"></audio>
-        </li>
-        <li class="flex items-center space-x-3">
-          <i class="fas fa-heart text-[#FF7F50]"></i>
-          <span>Interlude 1</span>
-          <audio controls src="Top%20of%20the%20Pops/Interlude%201.m4a" class="ml-auto"></audio>
-        </li>
-      	<li class="flex items-center space-x-3">
-          <i class="fas fa-heart text-[#FF7F50]"></i>
-          <span>Track 3</span>
-          <audio controls src="Top%20of%20the%20Pops/Track%203.m4a" class="ml-auto"></audio>
-        </li>
-        <li class="flex items-center space-x-3">
-          <i class="fas fa-heart text-[#FF7F50]"></i>
-          <span>Track 4</span>
-          <audio controls src="Top%20of%20the%20Pops/Track%204.m4a" class="ml-auto"></audio>
-        </li>
-        <li class="flex items-center space-x-3">
-          <i class="fas fa-heart text-[#FF7F50]"></i>
-          <span>Track 5</span>
-          <audio controls src="Top%20of%20the%20Pops/Track%205.m4a" class="ml-auto"></audio>
-        </li>
-        <li class="flex items-center space-x-3">
-          <i class="fas fa-heart text-[#FF7F50]"></i>
-          <span>Interlude 2</span>
-          <audio controls src="Top%20of%20the%20Pops/Interlude%202.m4a" class="ml-auto"></audio>
-        </li>
-      	<li class="flex items-center space-x-3">
-          <i class="fas fa-heart text-[#FF7F50]"></i>
-          <span>Track 6 - Outro</span>
-          <audio controls src="Top%20of%20the%20Pops/Track%206%20-%20Outro.m4a" class="ml-auto"></audio>
-        </li>
-      </ul>
+<!-- ════════════════════════════════════════════════
+     TAB 4 — SNACK PACK MATCH
+════════════════════════════════════════════════ -->
+<div id="tab-game" class="tab-content">
+  <div id="game-tab-inner">
+    <h1 class="text-3xl font-bold text-[#FF7F50] mb-2" style="text-shadow:1px 1px 0 #FED7CC, 2px 2px 0 #ffb8a0;">🍬 Snack Pack Match</h1>
+    <div id="game-ui-row">
+      <div id="score-box">Score: <span id="score-val">0</span></div>
+      <div id="best-box">Best: <span id="best-val">0</span></div>
+    </div>
+    <div id="game-wrapper">
+      <div id="next-label">Next: <span id="next-emoji">🥔</span></div>
+      <canvas id="game-canvas"></canvas>
+      <div class="game-pop-layer" id="game-pop-layer"></div>
+    </div>
+    <div id="chain-guide">
+      <span title="Potato">🥔</span><span class="chain-arrow">+</span><span title="Pudding">🍮</span>
+      <span class="chain-arrow">→</span><span title="Love">❤️</span>
+      <span class="chain-arrow">→</span><span title="Puppy">🐶</span>
+      <span class="chain-arrow">→</span><span title="Hamster">🐹</span>
+      <span class="chain-arrow">→</span><span title="Teddy Bear">🧸</span>
+      <span class="chain-arrow">→</span><span title="Turtle">🐢</span>
+      <span class="chain-arrow">→</span><span title="Banana">🍌</span>
+      <span class="chain-arrow">→</span><span title="Jigsaw">🧩</span>
+      <span class="chain-arrow">→</span><span title="Victory!">🏆</span>
     </div>
   </div>
+</div>
 
-  <!-- CUDDLY CONVOS TAB CONTENT -->
-  <div id="tab-convos" class="tab-content">
-    <div class="bg-white shadow-2xl rounded-2xl p-8 text-center convo-card w-full mx-4 relative overflow-hidden">
-      <h1 class="text-3xl font-bold text-[#FF7F50] mb-4">
-        <i class="fa-light fa-circle-heart text-[#FF7F50] mx-2"></i>
-        Cuddly Convos
-        <i class="fa-light fa-circle-heart text-[#FF7F50] mx-2"></i>
-      </h1>
-      <p class="mb-6 text-gray-600">Mwwwwwahhhhhh. Want to chew on you 💕</p>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
-        <div>
-          <div class="flex items-center justify-between mb-3">
-            <h2 class="text-xl font-semibold text-[#FF7F50]">Important Questions</h2>
-            
-          </div>
-          <ol id="convos-important" class="space-y-3 convo-important">
-            <!-- Filled by JS -->
-          </ol>
-        </div>
-
-        <div>
-          <div class="flex items-center justify-between mb-3">
-            <h2 class="text-xl font-semibold text-[#FF7F50]">Other Questions</h2>
-            <div class="flex items-center space-x-2">
-              <button id="shuffle-convos" class="tab-btn text-sm py-1 px-3">Shuffle</button>
-            </div>
-          </div>
-          <ul id="convos-other" class="space-y-2 convo-other">
-            <!-- Filled by JS -->
-          </ul>
-        </div>
-      </div>
-
-      <!-- NEW SUGGESTION FORM -->
-      <div class="suggestion-form">
-        <h3 class="text-lg font-semibold text-[#FF7F50] mb-3 flex items-center">
-          <i class="fas fa-lightbulb mr-2"></i>
-          KHOM! Suggest a cuddly question my perfect pie
-        </h3>
-        <p class="text-sm text-gray-600 mb-4">Tappa tappa and it'll be sent to potato's GitHub</p>
-        
-        <form id="suggestion-form">
-          <textarea 
-            id="question-input" 
-            class="suggestion-input" 
-            placeholder="What's a question for the banana? 💕"
-            maxlength="500"
-            required
-          ></textarea>
-          
-          <div class="flex justify-between items-center mt-3">
-            <span id="char-count" class="text-xs text-gray-500">0/500 characters</span>
-            <button type="submit" id="submit-btn" class="submit-btn">
-              <i class="fas fa-paper-plane mr-2"></i>
-              Send to Potatooooo
-            </button>
-          </div>
-        </form>
-        
-        <div id="status-message" class="hidden"></div>
-      </div>
-
-    </div>
+<!-- Game overlay (inside body, not inside tab, so it can go fullscreen) -->
+<div id="game-overlay">
+  <div id="game-overlay-box">
+    <h2>🍬 Snack Pack Match</h2>
+    <p>Drop snacks to merge them!<br>🥔 Potato + 🍮 Pudding = ❤️ Love<br>Match pairs to climb the chain.<br>Don't let snacks reach the red line!</p>
+    <button onclick="startGame()">Play!</button>
   </div>
+</div>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      // ——— Tab logic (now supports 3 tabs) ———
-      const buttons = {
-        compliments: document.getElementById('tab-compliments-btn'),
-        pops: document.getElementById('tab-pops-btn'),
-        convos: document.getElementById('tab-convos-btn')
-      };
-      const tabs = {
-        compliments: document.getElementById('tab-compliments'),
-        pops: document.getElementById('tab-pops'),
-        convos: document.getElementById('tab-convos')
-      };
+<script>
+document.addEventListener('DOMContentLoaded', () => {
 
-      function showTab(tabKey) {
-        // clear all
-        Object.values(buttons).forEach(b=>b.classList.remove('active'));
-        Object.values(tabs).forEach(t=>t.classList.remove('active'));
-        // set active
-        buttons[tabKey].classList.add('active');
-        tabs[tabKey].classList.add('active');
-      }
+  // ════════════════════════════════════════════════
+  // TAB LOGIC
+  // ════════════════════════════════════════════════
+  const tabBtns = {
+    compliments: document.getElementById('tab-compliments-btn'),
+    pops:        document.getElementById('tab-pops-btn'),
+    convos:      document.getElementById('tab-convos-btn'),
+    game:        document.getElementById('tab-game-btn'),
+  };
+  const tabPanes = {
+    compliments: document.getElementById('tab-compliments'),
+    pops:        document.getElementById('tab-pops'),
+    convos:      document.getElementById('tab-convos'),
+    game:        document.getElementById('tab-game'),
+  };
+  const gameOverlay = document.getElementById('game-overlay');
 
-      buttons.compliments.addEventListener('click', ()=>showTab('compliments'));
-      buttons.pops.addEventListener('click', ()=>showTab('pops'));
-      buttons.convos.addEventListener('click', ()=>showTab('convos'));
+  function showTab(key) {
+    Object.values(tabBtns).forEach(b=>b.classList.remove('active'));
+    Object.values(tabPanes).forEach(p=>p.classList.remove('active'));
+    tabBtns[key].classList.add('active');
+    tabPanes[key].classList.add('active');
+    // show/hide game overlay only when on game tab
+    if (key === 'game') {
+      gameOverlay.style.display = '';
+    } else {
+      gameOverlay.style.display = 'none';
+    }
+  }
 
-
-      // ——— Compliment generator logic ———
-      const complimentText      = document.getElementById('compliment-text');
-      const loadingElement      = document.getElementById('loading');
-      const getComplimentBtn    = document.getElementById('get-compliment');
-      const complimentContainer = document.getElementById('compliment-container');
-      const popWordContainer    = document.getElementById('pop-word-container');
-      const mainBox             = complimentContainer.closest('.bg-white');
-
-      const COMPLIMENTS_URL = 'https://raw.githubusercontent.com/BenGoodair/compliments/main/compliments.txt';
-      const popWords = ["MWAH","KHOM","GRAB","Squeeeeze","rubbiees","POUNCE","cuddles","chomp","eat me","nuzzzleess","mümmeln","kisssiieeeeees","smooochieeess","my puddddinggg","mwwwwah","mwah mwah mwah"];
-
-      let compliments = [], currentIndex = -1;
-
-      function setLoading(isLoading) {
-        complimentText.style.display = isLoading ? 'none' : 'block';
-        loadingElement.style.display = isLoading ? 'block' : 'none';
-      }
-
-      async function fetchCompliments() {
-        setLoading(true);
-        try {
-          const res  = await fetch(COMPLIMENTS_URL);
-          const text = await res.text();
-          compliments = text.split('\n').filter(c=>c.trim()).map(c=>c.trim());
-          displayRandomCompliment();
-        } catch {
-          complimentText.textContent = 'Ohhhhh, want to compliment you but I can\'t right now';
-          setLoading(false);
-        }
-      }
-
-      function getRandomCompliment() {
-        let i;
-        do {
-          i = Math.floor(Math.random()*compliments.length);
-        } while (i === currentIndex && compliments.length > 1);
-        currentIndex = i;
-        return compliments[i];
-      }
-
-      function createPopWord() {
-        const word = popWords[Math.floor(Math.random()*popWords.length)];
-        const el   = document.createElement('div');
-        el.textContent = word;
-        el.className   = 'pop-word';
-        const r        = mainBox.getBoundingClientRect();
-        const placement= Math.floor(Math.random()*4);
-        const m=20, d=150;
-        let left, top;
-        if (placement===0) { left=r.left-m-Math.random()*d;         top=r.top+Math.random()*r.height; }
-        if (placement===1) { left=r.right+m+Math.random()*d;        top=r.top+Math.random()*r.height; }
-        if (placement===2) { left=r.left+Math.random()*r.width;     top=r.top-m-Math.random()*d; }
-        if (placement===3) { left=r.left+Math.random()*r.width;     top=r.bottom+m+Math.random()*d; }
-        left = Math.max(20, Math.min(window.innerWidth-100, left));
-        top  = Math.max(20, Math.min(window.innerHeight-50, top));
-        el.style.left       = `${left}px`;
-        el.style.top        = `${top}px`;
-        el.style.transform  = `rotate(${ -30 + Math.random()*60 }deg)`;
-        popWordContainer.appendChild(el);
-        setTimeout(() => popWordContainer.removeChild(el), 1800);
-      }
-
-      function displayRandomCompliment() {
-        if (!compliments.length) {
-          complimentText.textContent = 'No compliments!';
-          setLoading(false);
-          return;
-        }
-        setLoading(true);
-        setTimeout(() => {
-          complimentText.textContent = getRandomCompliment();
-          setLoading(false);
-          complimentContainer.classList.add('opacity-transition');
-          setTimeout(() => complimentContainer.classList.remove('opacity-transition'), 300);
-          const count = 3 + Math.floor(Math.random()*4);
-          for (let i=0; i<count; i++) setTimeout(createPopWord, i*200);
-        }, 400);
-      }
-
-      getComplimentBtn.addEventListener('mouseenter', () => {
-        getComplimentBtn.querySelector('i').style.animation = 'heartbeat 1s infinite';
-      });
-      getComplimentBtn.addEventListener('mouseleave', () => {
-        getComplimentBtn.querySelector('i').style.animation = '';
-      });
-      getComplimentBtn.addEventListener('click', () => {
-        if (compliments.length) displayRandomCompliment();
-      });
-
-      // kick it all off
-      fetchCompliments();
+  Object.keys(tabBtns).forEach(k => tabBtns[k].addEventListener('click', ()=>showTab(k)));
+  // hide game overlay initially (not on game tab)
+  gameOverlay.style.display = 'none';
 
 
-      // ——— Cuddly Convos logic ———
-      // Questions provided by you (embedded to avoid external fetch fragility)
-      const importantConversations = [
-        "How to know a partner won't harm you and/or when to have children?",
-        "What does it mean to be married?",
-        "What are our expectations for Canada?",
-        "How to see each other's souls better?",
-        "Who is in, and who is out, of our lives, and why?"
-      ];
+  // ════════════════════════════════════════════════
+  // COMPLIMENTS
+  // ════════════════════════════════════════════════
+  const complimentText   = document.getElementById('compliment-text');
+  const loadingEl        = document.getElementById('loading');
+  const getComplimentBtn = document.getElementById('get-compliment');
+  const complimentCont   = document.getElementById('compliment-container');
+  const popWordCont      = document.getElementById('pop-word-container');
+  const mainBox          = complimentCont.closest('.bg-white');
 
-      // You provided 5 'other' questions in the file you pasted. The design asked for 10 other questions,
-      // so I kept your 5 and added 5 gentle suggested prompts to reach 10. You can edit these directly below.
-      const otherConversations = [
-        "Is potato a Lucas and faking it for pudding?",
-        "How has our philosophy to the banana changed since 2023?",
-        "What secret sneaky life ambitions do we hold?",
-        "What makes you feel most yourself?",
-        "Do we want a hobby together?",
-        "What is the most 'us' thing in the world, ie. what defines our spirit?",
-        "What habbit do we have that is good and what habbit do we have that is baddy bad?",
-        "What scares us when we think about a future together?",
-        "What is the happiest we have ever felt together?",
-        "Are there more mediums of communication we don't currently use?"
-      ];
+  const COMPLIMENTS_URL = 'https://raw.githubusercontent.com/BenGoodair/compliments/main/compliments.txt';
+  const popWords = ["MWAH","KHOM","GRAB","Squeeeeze","rubbiees","POUNCE","cuddles","chomp","eat me","nuzzzleess","mümmeln","kisssiieeeeees","smooochieeess","my puddddinggg","mwwwwah","mwah mwah mwah"];
 
-      const importantList = document.getElementById('convos-important');
-      const otherList = document.getElementById('convos-other');
-      const shuffleBtn = document.getElementById('shuffle-convos');
+  let compliments=[], currentIndex=-1;
 
-      function renderImportant() {
-        importantList.innerHTML = '';
-        importantConversations.forEach((q, i) => {
-          const li = document.createElement('li');
-          li.className = 'flex items-start';
-          li.innerHTML = `
-            <div class="mr-3">
-              <i class="fas fa-heart heart-bullet text-2xl"></i>
-            </div>
-            <div>
-              <div class="q font-semibold text-gray-800">${i+1}. ${q}</div>
-            </div>`;
-          importantList.appendChild(li);
-        });
-      }
+  function setLoading(v) {
+    complimentText.style.display = v?'none':'block';
+    loadingEl.style.display      = v?'block':'none';
+  }
 
-      function renderOther(arr) {
-        otherList.innerHTML = '';
-        arr.forEach((q, i) => {
-          const li = document.createElement('li');
-          li.className = 'flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50';
-          li.innerHTML = `
-            <i class="fas fa-heart heart-bullet"></i>
-            <span class="q text-gray-700">${i+1}. ${q}</span>`;
-          otherList.appendChild(li);
-        });
-      }
+  async function fetchCompliments() {
+    setLoading(true);
+    try {
+      const res = await fetch(COMPLIMENTS_URL);
+      const txt = await res.text();
+      compliments = txt.split('\n').filter(c=>c.trim()).map(c=>c.trim());
+      displayRandomCompliment();
+    } catch {
+      complimentText.textContent = "Ohhhhh, want to compliment you but I can't right now";
+      setLoading(false);
+    }
+  }
 
-      function shuffleArray(a) {
-        const b = a.slice();
-        for (let i = b.length -1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i+1));
-          [b[i], b[j]] = [b[j], b[i]];
-        }
-        return b;
-      }
+  function getRandomCompliment() {
+    let i;
+    do { i=Math.floor(Math.random()*compliments.length); }
+    while (i===currentIndex && compliments.length>1);
+    currentIndex=i; return compliments[i];
+  }
 
-      shuffleBtn.addEventListener('click', ()=>{
-        renderOther(shuffleArray(otherConversations));
-      });
+  function createPopWord() {
+    const word=popWords[Math.floor(Math.random()*popWords.length)];
+    const el=document.createElement('div');
+    el.textContent=word; el.className='pop-word';
+    const r=mainBox.getBoundingClientRect();
+    const placement=Math.floor(Math.random()*4);
+    const m=20,d=150; let left,top;
+    if(placement===0){left=r.left-m-Math.random()*d; top=r.top+Math.random()*r.height;}
+    if(placement===1){left=r.right+m+Math.random()*d; top=r.top+Math.random()*r.height;}
+    if(placement===2){left=r.left+Math.random()*r.width; top=r.top-m-Math.random()*d;}
+    if(placement===3){left=r.left+Math.random()*r.width; top=r.bottom+m+Math.random()*d;}
+    left=Math.max(20,Math.min(window.innerWidth-100,left));
+    top=Math.max(20,Math.min(window.innerHeight-50,top));
+    el.style.left=`${left}px`; el.style.top=`${top}px`;
+    el.style.transform=`rotate(${-30+Math.random()*60}deg)`;
+    popWordCont.appendChild(el);
+    setTimeout(()=>{ if(el.parentNode) popWordCont.removeChild(el); },1800);
+  }
 
-      // initial render
-      renderImportant();
-      renderOther(otherConversations);
+  function displayRandomCompliment() {
+    if(!compliments.length){ complimentText.textContent='No compliments!'; setLoading(false); return; }
+    setLoading(true);
+    setTimeout(()=>{
+      complimentText.textContent=getRandomCompliment();
+      setLoading(false);
+      complimentCont.classList.add('opacity-transition');
+      setTimeout(()=>complimentCont.classList.remove('opacity-transition'),300);
+      const count=3+Math.floor(Math.random()*4);
+      for(let i=0;i<count;i++) setTimeout(createPopWord,i*200);
+    },400);
+  }
+
+  getComplimentBtn.addEventListener('mouseenter',()=>{ getComplimentBtn.querySelector('i').style.animation='heartbeat 1s infinite'; });
+  getComplimentBtn.addEventListener('mouseleave',()=>{ getComplimentBtn.querySelector('i').style.animation=''; });
+  getComplimentBtn.addEventListener('click',()=>{ if(compliments.length) displayRandomCompliment(); });
+  fetchCompliments();
 
 
-      // ——— Question Suggestion Logic ———
-      const suggestionForm = document.getElementById('suggestion-form');
-      const questionInput = document.getElementById('question-input');
-      const charCount = document.getElementById('char-count');
-      const submitBtn = document.getElementById('submit-btn');
-      const statusMessage = document.getElementById('status-message');
+  // ════════════════════════════════════════════════
+  // CUDDLY CONVOS
+  // ════════════════════════════════════════════════
+  const importantConversations = [
+    "How to know a partner won't harm you and/or when to have children?",
+    "What does it mean to be married?",
+    "What are our expectations for Canada?",
+    "How to see each other's souls better?",
+    "Who is in, and who is out, of our lives, and why?"
+  ];
+  const otherConversations = [
+    "Is potato a Lucas and faking it for pudding?",
+    "How has our philosophy to the banana changed since 2023?",
+    "What secret sneaky life ambitions do we hold?",
+    "What makes you feel most yourself?",
+    "Do we want a hobby together?",
+    "What is the most 'us' thing in the world, ie. what defines our spirit?",
+    "What habbit do we have that is good and what habbit do we have that is baddy bad?",
+    "What scares us when we think about a future together?",
+    "What is the happiest we have ever felt together?",
+    "Are there more mediums of communication we don't currently use?"
+  ];
 
-      // GitHub configuration
-      const GITHUB_CONFIG = {
-        owner: 'puddingpie-potatopop',  // Your GitHub username
-        repo: 'complinibbles',          // Your repo name
-      };
+  const importantList=document.getElementById('convos-important');
+  const otherList=document.getElementById('convos-other');
+  const shuffleBtn=document.getElementById('shuffle-convos');
 
-      // Character counter
-      questionInput.addEventListener('input', () => {
-        const length = questionInput.value.length;
-        charCount.textContent = `${length}/500 characters`;
-        
-        if (length > 450) {
-          charCount.style.color = '#FF7F50';
-        } else {
-          charCount.style.color = '#6B7280';
-        }
-      });
-
-      // Form submission
-      suggestionForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const question = questionInput.value.trim();
-        if (!question) return;
-
-        // For now, we'll use the manual method since it's more secure
-        // You can implement a serverless function later if desired
-        showManualInstructions(question);
-        questionInput.value = '';
-        charCount.textContent = '0/500 characters';
-      });
-
-      function showStatus(message, type) {
-        statusMessage.textContent = message;
-        statusMessage.className = `status-message status-${type}`;
-        statusMessage.classList.remove('hidden');
-        
-        if (type === 'success') {
-          setTimeout(() => {
-            statusMessage.classList.add('hidden');
-          }, 5000);
-        }
-      }
-
-      function showManualInstructions(question) {
-        const githubUrl = `https://github.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/issues/new?title=${encodeURIComponent('💕 New Cuddly Convo Suggestion')}&body=${encodeURIComponent(`**Question:** ${question}\n\n_Submitted by the perfect puddingpie 🍮💕`)}`;
-        
-        showStatus(`✨ Mwah mwah mwah! Have some kissies while we wait! Mwwwwwwaaaaahhhhhh!...`, 'success');
-        
-        setTimeout(() => {
-          statusMessage.innerHTML = `
-            <div class="status-message status-success">
-              <p class="mb-3">✨ Ready to send your question to the Potatokopf!</p>
-              <p class="mb-3"><strong>Your question:</strong> "${question}"</p>
-              <a href="${githubUrl}" target="_blank" class="inline-block bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-700 transition">
-                <i class="fab fa-github mr-2"></i>Send it to the potatopop
-              </a>
-              <p class="text-xs mt-2 opacity-75">This will open GitHub in a new tab with your question pre-filled!</p>
-            </div>
-          `;
-          statusMessage.classList.remove('hidden');
-        }, 5000);
-      }
-
-      async function createGitHubIssue(question) {
-        // This function is kept for potential future serverless implementation
-        // For security, we're using the manual method above
-        return false;
-      }
-
+  function renderImportant() {
+    importantList.innerHTML='';
+    importantConversations.forEach((q,i)=>{
+      const li=document.createElement('li'); li.className='flex items-start';
+      li.innerHTML=`<div class="mr-3"><i class="fas fa-heart heart-bullet text-2xl"></i></div><div><div class="q font-semibold text-gray-800">${i+1}. ${q}</div></div>`;
+      importantList.appendChild(li);
     });
-  </script>
+  }
+  function renderOther(arr) {
+    otherList.innerHTML='';
+    arr.forEach((q,i)=>{
+      const li=document.createElement('li'); li.className='flex items-center space-x-3 p-2 rounded-lg hover:bg-orange-50';
+      li.innerHTML=`<i class="fas fa-heart heart-bullet"></i><span class="q text-gray-700">${i+1}. ${q}</span>`;
+      otherList.appendChild(li);
+    });
+  }
+  function shuffleArray(a){ const b=a.slice(); for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b; }
+
+  shuffleBtn.addEventListener('click',()=>renderOther(shuffleArray(otherConversations)));
+  renderImportant(); renderOther(otherConversations);
+
+  // Suggestion form
+  const suggestionForm=document.getElementById('suggestion-form');
+  const questionInput=document.getElementById('question-input');
+  const charCount=document.getElementById('char-count');
+  const statusMessage=document.getElementById('status-message');
+  const GITHUB_CONFIG={owner:'puddingpie-potatopop',repo:'complinibbles'};
+
+  questionInput.addEventListener('input',()=>{
+    const l=questionInput.value.length;
+    charCount.textContent=`${l}/500 characters`;
+    charCount.style.color=l>450?'#FF7F50':'#6B7280';
+  });
+  suggestionForm.addEventListener('submit',async(e)=>{
+    e.preventDefault();
+    const question=questionInput.value.trim(); if(!question) return;
+    showManualInstructions(question);
+    questionInput.value=''; charCount.textContent='0/500 characters';
+  });
+  function showStatus(msg,type){ statusMessage.textContent=msg; statusMessage.className=`status-message status-${type}`; statusMessage.classList.remove('hidden'); if(type==='success') setTimeout(()=>statusMessage.classList.add('hidden'),5000); }
+  function showManualInstructions(question) {
+    const url=`https://github.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/issues/new?title=${encodeURIComponent('💕 New Cuddly Convo Suggestion')}&body=${encodeURIComponent(`**Question:** ${question}\n\n_Submitted by the perfect puddingpie 🍮💕`)}`;
+    showStatus('✨ Mwah mwah mwah! Have some kissies while we wait! Mwwwwwwaaaaahhhhhh!...','success');
+    setTimeout(()=>{
+      statusMessage.innerHTML=`<div class="status-message status-success"><p class="mb-3">✨ Ready to send your question to the Potatokopf!</p><p class="mb-3"><strong>Your question:</strong> "${question}"</p><a href="${url}" target="_blank" class="inline-block bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-700 transition"><i class="fab fa-github mr-2"></i>Send it to the potatopop</a><p class="text-xs mt-2 opacity-75">This will open GitHub in a new tab with your question pre-filled!</p></div>`;
+      statusMessage.classList.remove('hidden');
+    },5000);
+  }
+
+}); // end DOMContentLoaded
+
+
+// ════════════════════════════════════════════════
+// SNACK PACK MATCH GAME
+// (outside DOMContentLoaded so startGame() is global)
+// ════════════════════════════════════════════════
+const { Engine, Bodies, World, Events, Runner } = Matter;
+
+const SNACKS = [
+  { label:'potato',  emoji:'🥔', radius:20, points:1,   weight:30 },
+  { label:'pudding', emoji:'🍮', radius:20, points:1,   weight:30 },
+  { label:'love',    emoji:'❤️', radius:28, points:5,   weight:14 },
+  { label:'puppy',   emoji:'🐶', radius:34, points:15,  weight:6  },
+  { label:'gpig',    emoji:'🐹', radius:40, points:40,  weight:0  },
+  { label:'teddy',   emoji:'🧸', radius:48, points:80,  weight:0  },
+  { label:'turtle',  emoji:'🐢', radius:56, points:160, weight:0  },
+  { label:'banana',  emoji:'🍌', radius:62, points:320, weight:0  },
+  { label:'jigsaw',  emoji:'🧩', radius:68, points:640, weight:0  },
+];
+const IDX={};
+SNACKS.forEach((s,i)=>IDX[s.label]=i);
+const SPAWN_POOL=[];
+SNACKS.forEach(s=>{ for(let i=0;i<s.weight;i++) SPAWN_POOL.push(s); });
+
+// Pop words for merges — same flavour as the compliments tab
+const MERGE_WORDS = ["MWAH","KHOM","💕","SMOOCH","yum!","GRAB","squeeze","chomp","KISSSSS","nuzzle","mwwwah","❤️","cuties","POP!","BONK","merge!","oooh","🍮+🥔"];
+
+function canMerge(la,lb){
+  if((la==='potato'&&lb==='pudding')||(la==='pudding'&&lb==='potato')) return true;
+  return la===lb && la!=='potato' && la!=='pudding';
+}
+function mergeResultFor(la){
+  if(la==='potato'||la==='pudding') return SNACKS[IDX.love];
+  const ni=IDX[la]+1; return ni<SNACKS.length?SNACKS[ni]:null;
+}
+
+const CW=380,CH=560,WALL_T=30,DANGER_Y=80,DROP_Y=52;
+let gameCanvas, ctx, confCanvas, confCtx, gamePopsLayer;
+
+function initGameEls(){
+  gameCanvas = document.getElementById('game-canvas');
+  gameCanvas.width=CW; gameCanvas.height=CH;
+  ctx = gameCanvas.getContext('2d');
+  confCanvas = document.getElementById('confetti-canvas');
+  confCtx = confCanvas.getContext('2d');
+  gamePopsLayer = document.getElementById('game-pop-layer');
+}
+
+let engine,world,runner;
+let score=0,bestScore=0,currentSnack,nextSnack,dropX=CW/2;
+let canDrop=true,gameActive=false,victory=false;
+let bodies=[],mergeQueue=[],particles=[],confettiPieces=[];
+let animFrame,frameCount=0,lastSpawns=[];
+
+function pickSpawn(){
+  let candidate;
+  for(let attempt=0;attempt<10;attempt++){
+    candidate=SPAWN_POOL[Math.floor(Math.random()*SPAWN_POOL.length)];
+    const last2=lastSpawns.slice(-2);
+    if(last2.length===2&&last2.every(l=>l===candidate.label)&&(candidate.label==='potato'||candidate.label==='pudding')) continue;
+    break;
+  }
+  lastSpawns.push(candidate.label);
+  if(lastSpawns.length>6) lastSpawns.shift();
+  return candidate;
+}
+
+function updateScore(add){
+  score+=add;
+  document.getElementById('score-val').textContent=score;
+  if(score>bestScore){bestScore=score;document.getElementById('best-val').textContent=bestScore;}
+}
+
+function drawSnack(snack,x,y,r,angle,alpha,pulse){
+  ctx.save();
+  ctx.globalAlpha=alpha??1;
+  ctx.translate(x,y); ctx.rotate(angle??0);
+  if(pulse){const s=1+0.12*Math.sin(Date.now()/60);ctx.scale(s,s);}
+  // circle bg tinted to brand colour
+  ctx.fillStyle='rgba(255,247,242,0.7)';
+  ctx.beginPath();ctx.arc(0,0,r,0,Math.PI*2);ctx.fill();
+  ctx.font=`${Math.floor(r*1.25)}px serif`;
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText(snack.emoji,0,2);
+  ctx.restore();
+}
+
+// ── Game pop words (appear over the canvas) ──────────────────────────────────
+function spawnGamePopWord(canvasX, canvasY) {
+  if(!gamePopsLayer) return;
+  const word = MERGE_WORDS[Math.floor(Math.random()*MERGE_WORDS.length)];
+  const el = document.createElement('div');
+  el.textContent = word;
+  el.className = 'pop-word-game';
+  const rot = (-20+Math.random()*40).toFixed(1);
+  el.style.setProperty('--rot', `${rot}deg`);
+  // Scale canvas coords to actual rendered size
+  const rect = gameCanvas.getBoundingClientRect();
+  const scaleX = rect.width / CW;
+  const scaleY = rect.height / CH;
+  el.style.left = `${canvasX * scaleX}px`;
+  el.style.top  = `${canvasY * scaleY}px`;
+  el.style.color = ['#FF7F50','#FF6347','#ff9a9e','#c7497a','#ff6b9d'][Math.floor(Math.random()*5)];
+  gamePopsLayer.appendChild(el);
+  setTimeout(()=>{ if(el.parentNode) gamePopsLayer.removeChild(el); },1300);
+}
+
+// ── Confetti ──────────────────────────────────────────────────────────────────
+const CONF_COLS=['#ff6b9d','#FF7F50','#ffcc00','#00d2ff','#7bed9f','#ff4757','#eccc68','#a29bfe','#fd79a8','#FED7CC'];
+function startConfetti(){
+  confCanvas.width=window.innerWidth;confCanvas.height=window.innerHeight;confettiPieces=[];
+  for(let i=0;i<200;i++) confettiPieces.push({x:Math.random()*confCanvas.width,y:Math.random()*confCanvas.height-confCanvas.height,w:6+Math.random()*10,h:4+Math.random()*5,color:CONF_COLS[Math.floor(Math.random()*CONF_COLS.length)],vx:(Math.random()-0.5)*3,vy:2+Math.random()*4,angle:Math.random()*Math.PI*2,va:(Math.random()-0.5)*0.2});
+  animateConf();
+}
+function animateConf(){
+  confCtx.clearRect(0,0,confCanvas.width,confCanvas.height);let alive=false;
+  for(const p of confettiPieces){p.x+=p.vx;p.y+=p.vy;p.angle+=p.va;if(p.y<confCanvas.height+20)alive=true;confCtx.save();confCtx.translate(p.x,p.y);confCtx.rotate(p.angle);confCtx.fillStyle=p.color;confCtx.fillRect(-p.w/2,-p.h/2,p.w,p.h);confCtx.restore();}
+  if(alive) requestAnimationFrame(animateConf);
+  else confCtx.clearRect(0,0,confCanvas.width,confCanvas.height);
+}
+
+// ── Emoji burst particles ─────────────────────────────────────────────────────
+function spawnParticles(x,y,emoji){
+  for(let i=0;i<8;i++){
+    const a=(Math.PI*2*i)/8+Math.random()*0.4,sp=2+Math.random()*3.5;
+    particles.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-2,life:1,emoji,size:12+Math.random()*9});
+  }
+}
+
+// ── Start ─────────────────────────────────────────────────────────────────────
+function startGame(){
+  if(!gameCanvas) initGameEls();
+  document.getElementById('game-overlay').style.display='none';
+  if(confCtx) confCtx.clearRect(0,0,confCanvas.width||1,confCanvas.height||1);
+  score=0;updateScore(0);
+  bodies=[];mergeQueue=[];particles=[];confettiPieces=[];
+  canDrop=true;gameActive=true;victory=false;frameCount=0;lastSpawns=[];
+  if(engine){Runner.stop(runner);World.clear(world);Engine.clear(engine);cancelAnimationFrame(animFrame);}
+  engine=Engine.create({gravity:{y:2.2},positionIterations:6,velocityIterations:4,constraintIterations:2});
+  world=engine.world;
+  runner=Runner.create({delta:1000/60,isFixed:true});Runner.run(runner,engine);
+  const wo={isStatic:true,friction:0.4,restitution:0.25,label:'wall'};
+  World.add(world,[Bodies.rectangle(CW/2,CH+WALL_T/2,CW,WALL_T,wo),Bodies.rectangle(-WALL_T/2,CH/2,WALL_T,CH*2,wo),Bodies.rectangle(CW+WALL_T/2,CH/2,WALL_T,CH*2,wo)]);
+  Events.on(engine,'collisionStart',onCollision);
+  currentSnack=pickSpawn();nextSnack=pickSpawn();setNextLabel();
+  gameCanvas.addEventListener('mousemove',onMM);
+  gameCanvas.addEventListener('click',onClick);
+  gameCanvas.addEventListener('touchmove',onTM,{passive:false});
+  gameCanvas.addEventListener('touchend',onTE);
+  gameLoop();
+}
+
+function setNextLabel(){ document.getElementById('next-emoji').textContent=nextSnack.emoji; }
+
+function getDropX(cx){const r=gameCanvas.getBoundingClientRect();return Math.max(28,Math.min(CW-28,(cx-r.left)*(CW/r.width)));}
+function onMM(e){if(gameActive)dropX=getDropX(e.clientX);}
+function onTM(e){e.preventDefault();if(gameActive)dropX=getDropX(e.touches[0].clientX);}
+function onClick(){if(gameActive&&canDrop)drop();}
+function onTE(){if(gameActive&&canDrop)drop();}
+
+function drop(){
+  if(!canDrop||!gameActive)return;canDrop=false;
+  const s=currentSnack;
+  const b=Bodies.circle(dropX,DROP_Y,s.radius,{restitution:0.35,friction:0.5,frictionAir:0.005,density:0.002,label:'snack'});
+  b.snack=s;b.justDropped=true;bodies.push(b);World.add(world,b);
+  setTimeout(()=>{if(b)b.justDropped=false;},220);
+  currentSnack=nextSnack;nextSnack=pickSpawn();setNextLabel();
+  setTimeout(()=>{canDrop=true;},480);
+}
+
+function onCollision(ev){
+  for(const pair of ev.pairs){
+    const a=pair.bodyA,b=pair.bodyB;
+    if(a.label!=='snack'||b.label!=='snack') continue;
+    if(a.justDropped||b.justDropped||a.merging||b.merging) continue;
+    if(!canMerge(a.snack.label,b.snack.label)) continue;
+    a.merging=true;b.merging=true;
+    mergeQueue.push({a,b,result:mergeResultFor(a.snack.label),mx:(a.position.x+b.position.x)/2,my:(a.position.y+b.position.y)/2,pts:a.snack.points+b.snack.points});
+  }
+}
+
+function processMerges(){
+  if(mergeQueue.length===0)return;
+  const toProcess=mergeQueue.splice(0);
+  for(const m of toProcess){
+    const{a,b,result,mx,my,pts}=m;
+    if(!bodies.includes(a)||!bodies.includes(b)) continue;
+    bodies=bodies.filter(bd=>bd!==a&&bd!==b);
+    World.remove(world,a);World.remove(world,b);
+    updateScore(pts);
+    spawnParticles(mx,my,result?(result.emoji||'⭐'):'🏆');
+    spawnGamePopWord(mx, my);           // ← pop word on merge!
+    if(result){
+      const nb=Bodies.circle(mx,Math.min(my,CH-result.radius-5),result.radius,{restitution:0.4,friction:0.5,frictionAir:0.005,density:0.003,label:'snack'});
+      nb.snack=result;nb.justMerged=true;bodies.push(nb);World.add(world,nb);
+      setTimeout(()=>{if(nb)nb.justMerged=false;},250);
+    } else {
+      triggerVictory();
+    }
+  }
+}
+
+function triggerVictory(){
+  if(victory)return;victory=true;gameActive=false;canDrop=false;rmListeners();
+  startConfetti();
+  setTimeout(()=>{
+    document.getElementById('game-overlay-box').innerHTML=`<h2>🏆 You Win!</h2><p>You completed the Snack Pack chain!<br>Final score: <strong>${score}</strong></p><button onclick="startGame()">Play again</button>`;
+    document.getElementById('game-overlay').style.display='';
+  },1800);
+}
+function triggerGameOver(){
+  if(!gameActive)return;gameActive=false;canDrop=false;rmListeners();
+  document.getElementById('game-overlay-box').innerHTML=`<h2>😅 Oh no!</h2><p>Your snacks overflowed!<br>Final score: <strong>${score}</strong>${score===bestScore&&score>0?'<br>🏆 New best score!':''}</p><button onclick="startGame()">Play again</button>`;
+  document.getElementById('game-overlay').style.display='';
+}
+function rmListeners(){
+  gameCanvas.removeEventListener('mousemove',onMM);gameCanvas.removeEventListener('click',onClick);
+  gameCanvas.removeEventListener('touchmove',onTM);gameCanvas.removeEventListener('touchend',onTE);
+}
+
+function gameLoop(){
+  animFrame=requestAnimationFrame(gameLoop);
+  processMerges();
+  ctx.clearRect(0,0,CW,CH);
+  // bg — warm white matching the card style
+  ctx.fillStyle='rgba(255,247,242,0.85)';
+  ctx.beginPath();ctx.roundRect(0,0,CW,CH,16);ctx.fill();
+  // danger zone
+  ctx.fillStyle='rgba(255,80,50,0.10)';ctx.fillRect(0,0,CW,DANGER_Y);
+  ctx.save();ctx.strokeStyle='rgba(255,100,60,0.7)';ctx.lineWidth=2;ctx.setLineDash([10,6]);
+  ctx.beginPath();ctx.moveTo(0,DANGER_Y);ctx.lineTo(CW,DANGER_Y);ctx.stroke();ctx.restore();
+  ctx.font='11px system-ui';ctx.fillStyle='rgba(200,60,40,0.85)';ctx.fillText('⚠ danger zone',8,DANGER_Y-4);
+  // snacks
+  for(const b of bodies) drawSnack(b.snack,b.position.x,b.position.y,b.snack.radius,b.angle,1,b.justMerged);
+  // drop preview
+  if(currentSnack&&canDrop&&gameActive){
+    drawSnack(currentSnack,dropX,DROP_Y,currentSnack.radius,0,0.45,false);
+    ctx.save();ctx.strokeStyle='rgba(255,127,80,0.3)';ctx.lineWidth=1;ctx.setLineDash([4,4]);
+    ctx.beginPath();ctx.moveTo(dropX,DROP_Y+currentSnack.radius);ctx.lineTo(dropX,CH);ctx.stroke();ctx.restore();
+  }
+  // emoji burst particles
+  for(let i=particles.length-1;i>=0;i--){
+    const p=particles[i];p.x+=p.vx;p.y+=p.vy;p.vy+=0.18;p.life-=0.035;
+    if(p.life<=0){particles.splice(i,1);continue;}
+    ctx.save();ctx.globalAlpha=p.life;ctx.font=`${Math.floor(p.size)}px serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(p.emoji,p.x,p.y);ctx.restore();
+  }
+  // game over check (throttled)
+  if(gameActive&&frameCount%20===0){
+    for(const b of bodies){
+      if(b.justDropped||b.justMerged)continue;
+      if(b.position.y-b.snack.radius<DANGER_Y&&Math.abs(b.velocity.y)<0.4&&Math.abs(b.velocity.x)<0.4){triggerGameOver();return;}
+    }
+  }
+  frameCount++;
+}
+</script>
 </body>
 </html>
